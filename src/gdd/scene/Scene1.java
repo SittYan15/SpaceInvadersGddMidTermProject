@@ -187,7 +187,7 @@ public class Scene1 extends JPanel {
 
             // Calculate Y position for this row
             // int y = (screenRow * BLOCKHEIGHT) - scrollOffset;
-            int y = BOARD_HEIGHT - ( (screenRow * BLOCKHEIGHT) - scrollOffset );
+            int y = BOARD_HEIGHT - ((screenRow * BLOCKHEIGHT) - scrollOffset);
 
             // Skip if row is completely off-screen
             if (y > BOARD_HEIGHT || y < -BLOCKHEIGHT) {
@@ -266,29 +266,44 @@ public class Scene1 extends JPanel {
     private void drawPlayer(Graphics g) {
 
         if (player.isVisible()) {
-            g.drawImage(player.getImage(), player.getX()-(player.getWidth()/2), player.getY()-player.getHeight(), player.getWidth(), player.getHeight(), this);
-            // if (player.getFacing() == Player.DIR_RIGHT) {
-            //     g.drawImage(player.getImage(), player.getX()-(player.getWidth()/2), player.getY()-player.getHeight(), player.getWidth(), player.getHeight(), this);
-            // } else {
-            //     g.drawImage(player.getImage(), player.getX()+player.getWidth()/2, player.getY()-player.getHeight(), -player.getWidth(), player.getHeight(), this);
-            // }
-            // g.drawImage(player.getImage(), player.getX(), player.getY()-player.getHeight(), this);
-            g.drawRect(player.getX(),player.getY(),10,10);
-            g.drawRect(player.getX()-(player.getWidth()/2),player.getY()-player.getHeight(),player.getWidth(),player.getHeight());
-            g.drawString("Player Frame# "+player.getFrame(), 300,10);
-            g.drawString("Player Action# "+player.getAction(), 550,10);
+            double scale = 1.8; // scale factor
+            int scaledWidth = (int)(player.getWidth() * scale);
+            int scaledHeight = (int)(player.getHeight() * scale);
+            int drawX = player.getX() - (scaledWidth / 2);
+            int drawY = player.getY() - scaledHeight;
+
+            g.drawImage(player.getImage(), drawX, drawY, scaledWidth, scaledHeight, this);
+            g.drawRect(player.getX(), player.getY(), 10, 10);
+            g.drawRect(drawX, drawY, scaledWidth, scaledHeight);
+            g.drawString("Player Frame# " + player.getFrame(), 300, 10);
+            g.drawString("Player Action# " + player.getAction(), 550, 10);
         }
 
-        // if (player.isVisible()) {
-
-        //     g.drawImage(player.getImage(), player.getX(), player.getY(), this);
-        // }
-
         if (player.isDying()) {
-
             player.die();
             inGame = false;
         }
+
+        // if (player.isVisible()) {
+        //     g.drawImage(player.getImage(), player.getX()-(player.getWidth()/2), player.getY()-player.getHeight(), player.getWidth(), player.getHeight(), this);
+        //     // if (player.getFacing() == Player.DIR_RIGHT) {
+        //     //     g.drawImage(player.getImage(), player.getX()-(player.getWidth()/2), player.getY()-player.getHeight(), player.getWidth(), player.getHeight(), this);
+        //     // } else {
+        //     //     g.drawImage(player.getImage(), player.getX()+player.getWidth()/2, player.getY()-player.getHeight(), -player.getWidth(), player.getHeight(), this);
+        //     // }
+        //     // g.drawImage(player.getImage(), player.getX(), player.getY()-player.getHeight(), this);
+        //     g.drawRect(player.getX(),player.getY(),10,10);
+        //     g.drawRect(player.getX()-(player.getWidth()/2),player.getY()-player.getHeight(),player.getWidth(),player.getHeight());
+        //     g.drawString("Player Frame# "+player.getFrame(), 300,10);
+        //     g.drawString("Player Action# "+player.getAction(), 550,10);
+        // }
+        // // if (player.isVisible()) {
+        // //     g.drawImage(player.getImage(), player.getX(), player.getY(), this);
+        // // }
+        // if (player.isDying()) {
+        //     player.die();
+        //     inGame = false;
+        // }
     }
 
     private void drawShot(Graphics g) {
@@ -387,7 +402,6 @@ public class Scene1 extends JPanel {
     }
 
     private void update() {
-
 
         // Check enemy spawn
         // TODO this approach can only spawn one enemy at a frame

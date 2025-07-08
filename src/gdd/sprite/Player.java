@@ -23,16 +23,16 @@ public class Player extends Sprite {
 
     private int clipNo = 3;
 
-    private static final String ACT_STAND = "STAND";
-    private static final String ACT_TURN_LEFT = "TURN_LEFT";
-    private static final String ACT_TURN_RIGHT = "TURN_RIGHT";
-    private static final String ACT_SPEED_UP = "SPEED_UP";
-    private static final String ACT_SPEED_DOWN = "SPEED_DOWN";
-    private static final String ACT_SPEED_UP_TURN_LEFT = "SPEED_UP_TURN_LEFT";
-    private static final String ACT_SPEED_UP_TURN_RIGHT = "SPEED_UP_TURN_RIGHT";
-    private static final String ACT_SPEED_DOWN_TURN_LEFT = "SPEED_DOWN_TURN_LEFT";
-    private static final String ACT_SPEED_DOWN_TURN_RIGHT = "SPEED_DOWN_TURN_RIGHT";
-    private String action = ACT_STAND;
+    private static final int ACT_STAND = 0; // STAND
+    private static final int ACT_TURN_LEFT = 1; // TURN_LEFT
+    private static final int ACT_TURN_RIGHT = 2; // TURN_RIGHT
+    private static final int ACT_SPEED_UP = 3; // SPEED_UP
+    private static final int ACT_SPEED_DOWN = 4; // SPEED_DOWN
+    private static final int ACT_SPEED_UP_TURN_LEFT = 5; // SPEED_UP_TURN_LEFT
+    private static final int ACT_SPEED_UP_TURN_RIGHT = 6; // SPEED_UP_TURN_RIGHT
+    private static final int ACT_SPEED_DOWN_TURN_LEFT = 7; // SPEED_DOWN_TURN_LEFT
+    private static final int ACT_SPEED_DOWN_TURN_RIGHT = 8; // SPEED_DOWN_TURN_RIGHT
+    private int action = ACT_STAND;
 
     public Player() {
         initPlayer();
@@ -92,7 +92,38 @@ public class Player extends Sprite {
     }
 
     public String getAction() {
-        return action;
+        switch (action) {
+            case ACT_STAND -> {
+                return "Standing";
+            }
+            case ACT_TURN_LEFT -> {
+                return "Turning Left";
+            }
+            case ACT_TURN_RIGHT -> {
+                return "Turning Right";
+            }
+            case ACT_SPEED_UP -> {
+                return "Speeding Up";
+            }
+            case ACT_SPEED_DOWN -> {
+                return "Slowing Down";
+            }
+            case ACT_SPEED_UP_TURN_LEFT -> {
+                return "Speeding Up and Turning Left";
+            }
+            case ACT_SPEED_UP_TURN_RIGHT -> {
+                return "Speeding Up and Turning Right";
+            }
+            case ACT_SPEED_DOWN_TURN_LEFT -> {
+                return "Slowing Down and Turning Left";
+            }
+            case ACT_SPEED_DOWN_TURN_RIGHT -> {
+                return "Slowing Down and Turning Right";
+            }
+            default -> {
+                return "Unknown Action";
+            }
+        }
     }
 
     @Override
@@ -101,6 +132,7 @@ public class Player extends Sprite {
         frame++;
 
         x += dx;
+        y += dy;
 
         if (x <= 2) {
             x = 2;
@@ -108,6 +140,14 @@ public class Player extends Sprite {
 
         if (x >= BOARD_WIDTH - 2 * width) {
             x = BOARD_WIDTH - 2 * width;
+        }
+
+        if (y <= 50) {
+            y = 50;
+        }
+
+        if (y >= BOARD_HEIGHT - 20) {
+            y = BOARD_HEIGHT - 20;
         }
 
         // animation logic
@@ -131,16 +171,47 @@ public class Player extends Sprite {
             }
 
             case ACT_SPEED_UP -> {
-                currentSpeed++;
-                action = ACT_STAND;
+                clipNo = 5;
             }
 
             case ACT_SPEED_DOWN -> {
-                currentSpeed--;
-                if (currentSpeed < 1) {
-                    currentSpeed = 1;
+                clipNo = 6;
+            }
+
+            case ACT_SPEED_UP_TURN_LEFT -> {
+                if (frame < 10) {
+                    facing = DIR_LEFT;
+                    clipNo = 7; // intro turning left
+                } else {
+                    clipNo = 8; // turning left
                 }
-                action = ACT_STAND;
+            }
+
+            case ACT_SPEED_DOWN_TURN_LEFT -> {
+                if (frame < 10) {
+                    facing = DIR_LEFT;
+                    clipNo = 11; // intro turning left
+                } else {
+                    clipNo = 12; // turning left
+                }
+            }
+
+            case ACT_SPEED_UP_TURN_RIGHT -> {
+                if (frame < 10) {
+                    facing = DIR_RIGHT;
+                    clipNo = 9; // intro turning right
+                } else {
+                    clipNo = 10; // turning right
+                }
+            }
+            
+            case ACT_SPEED_DOWN_TURN_RIGHT -> {
+                if (frame < 10) {
+                    facing = DIR_RIGHT;
+                    clipNo = 13; // intro turning right
+                } else {
+                    clipNo = 14; // turning right
+                }
             }
 
             default -> // ACT_STAND
@@ -166,12 +237,10 @@ public class Player extends Sprite {
                     }
                     case KeyEvent.VK_UP -> {
                         dy = -currentSpeed;
-                        frame = 0;
                         action = ACT_SPEED_UP;
                     }
                     case KeyEvent.VK_DOWN -> {
                         dy = currentSpeed;
-                        frame = 0;
                         action = ACT_SPEED_DOWN;
                     }
                 }
@@ -179,15 +248,16 @@ public class Player extends Sprite {
             case ACT_TURN_LEFT -> {
                 switch (key) {
                     case KeyEvent.VK_RIGHT -> {
-
+                        dx = currentSpeed;
+                        frame = 0;
                         action = ACT_TURN_RIGHT;
                     }
                     case KeyEvent.VK_UP -> {
-
+                        dy = -currentSpeed;
                         action = ACT_SPEED_UP_TURN_LEFT;
                     }
                     case KeyEvent.VK_DOWN -> {
-
+                        dy = currentSpeed;
                         action = ACT_SPEED_DOWN_TURN_LEFT;
                     }
                 }
@@ -195,15 +265,16 @@ public class Player extends Sprite {
             case ACT_TURN_RIGHT -> {
                 switch (key) {
                     case KeyEvent.VK_LEFT -> {
-
+                        dx = -currentSpeed;
+                        frame = 0;
                         action = ACT_TURN_LEFT;
                     }
                     case KeyEvent.VK_UP -> {
-
+                        dy = -currentSpeed;
                         action = ACT_SPEED_UP_TURN_RIGHT;
                     }
                     case KeyEvent.VK_DOWN -> {
-
+                        dy = currentSpeed;
                         action = ACT_SPEED_DOWN_TURN_RIGHT;
                     }
                 }
@@ -222,8 +293,7 @@ public class Player extends Sprite {
                     }
                     case KeyEvent.VK_DOWN -> {
                         dy = currentSpeed;
-                        frame = 0;
-                        action = ACT_SPEED_DOWN_TURN_RIGHT;
+                        action = ACT_SPEED_DOWN;
                     }
                 }
             }
@@ -241,7 +311,6 @@ public class Player extends Sprite {
                     }
                     case KeyEvent.VK_UP -> {
                         dy = -currentSpeed;
-                        frame = 0;
                         action = ACT_SPEED_UP_TURN_RIGHT;
                     }
                 }
@@ -255,7 +324,6 @@ public class Player extends Sprite {
                     }
                     case KeyEvent.VK_DOWN -> {
                         dy = currentSpeed;
-                        frame = 0;
                         action = ACT_SPEED_DOWN_TURN_LEFT;
                     }
                 }
@@ -269,7 +337,6 @@ public class Player extends Sprite {
                     }
                     case KeyEvent.VK_DOWN -> {
                         dy = currentSpeed;
-                        frame = 0;
                         action = ACT_SPEED_DOWN_TURN_RIGHT;
                     }
                 }
@@ -283,7 +350,6 @@ public class Player extends Sprite {
                     }
                     case KeyEvent.VK_UP -> {
                         dy = -currentSpeed;
-                        frame = 0;
                         action = ACT_SPEED_UP_TURN_LEFT;
                     }
                 }
@@ -297,7 +363,6 @@ public class Player extends Sprite {
                     }
                     case KeyEvent.VK_UP -> {
                         dy = -currentSpeed;
-                        frame = 0;
                         action = ACT_SPEED_UP_TURN_RIGHT;
                     }
                 }
@@ -310,28 +375,7 @@ public class Player extends Sprite {
 
         switch (action) {
             case ACT_STAND -> {
-                switch (key) {
-                    case KeyEvent.VK_LEFT -> {
-                        dx = 0;
-                        frame = 0;
-                        action = ACT_STAND;
-                    }
-                    case KeyEvent.VK_RIGHT -> {
-                        dx = 0;
-                        frame = 0;
-                        action = ACT_STAND;
-                    }
-                    case KeyEvent.VK_UP -> {
-                        dy = 0;
-                        frame = 0;
-                        action = ACT_STAND;
-                    }
-                    case KeyEvent.VK_DOWN -> {
-                        dy = 0;
-                        frame = 0;
-                        action = ACT_STAND;
-                    }
-                }
+
             }
             case ACT_TURN_LEFT -> {
                 switch (key) {
@@ -354,8 +398,7 @@ public class Player extends Sprite {
             case ACT_SPEED_UP -> {
                 switch (key) {
                     case KeyEvent.VK_UP -> {
-                        dx = 0;
-                        frame = 0;
+                        dy = 0;
                         action = ACT_STAND;
                     }
                 }
@@ -363,22 +406,21 @@ public class Player extends Sprite {
             case ACT_SPEED_DOWN -> {
                 switch (key) {
                     case KeyEvent.VK_DOWN -> {
-                        dx = 0;
-                        frame = 0;
+                        dy = 0;
                         action = ACT_STAND;
                     }
                 }
             }
             case ACT_SPEED_UP_TURN_LEFT -> {
                 switch (key) {
+                    case KeyEvent.VK_LEFT -> {
+                        dx = 0;
+                        frame = 0;
+                        action = ACT_SPEED_UP;
+                    }
                     case KeyEvent.VK_UP -> {
                         dy = 0;
                         action = ACT_TURN_LEFT;
-                    }
-                    case KeyEvent.VK_LEFT -> {
-                        dx = currentSpeed;
-                        frame = 0;
-                        action = ACT_SPEED_UP;
                     }
                 }
             }
@@ -391,7 +433,6 @@ public class Player extends Sprite {
                     }
                     case KeyEvent.VK_UP -> {
                         dy = 0;
-                        frame = 0;
                         action = ACT_TURN_RIGHT;
                     }
                 }
@@ -405,8 +446,7 @@ public class Player extends Sprite {
                     }
                     case KeyEvent.VK_DOWN -> {
                         dy = 0;
-                        frame = 0;
-                        action = ACT_SPEED_DOWN;
+                        action = ACT_TURN_LEFT;
                     }
                 }
             }
@@ -419,7 +459,6 @@ public class Player extends Sprite {
                     }
                     case KeyEvent.VK_DOWN -> {
                         dy = 0;
-                        frame = 0;
                         action = ACT_TURN_RIGHT;
                     }
                 }
