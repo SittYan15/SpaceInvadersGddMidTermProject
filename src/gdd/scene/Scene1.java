@@ -266,9 +266,23 @@ public class Scene1 extends JPanel {
     private void drawPlayer(Graphics g) {
 
         if (player.isVisible()) {
-
-            g.drawImage(player.getImage(), player.getX(), player.getY(), this);
+            g.drawImage(player.getImage(), player.getX()-(player.getWidth()/2), player.getY()-player.getHeight(), player.getWidth(), player.getHeight(), this);
+            // if (player.getFacing() == Player.DIR_RIGHT) {
+            //     g.drawImage(player.getImage(), player.getX()-(player.getWidth()/2), player.getY()-player.getHeight(), player.getWidth(), player.getHeight(), this);
+            // } else {
+            //     g.drawImage(player.getImage(), player.getX()+player.getWidth()/2, player.getY()-player.getHeight(), -player.getWidth(), player.getHeight(), this);
+            // }
+            // g.drawImage(player.getImage(), player.getX(), player.getY()-player.getHeight(), this);
+            g.drawRect(player.getX(),player.getY(),10,10);
+            g.drawRect(player.getX()-(player.getWidth()/2),player.getY()-player.getHeight(),player.getWidth(),player.getHeight());
+            g.drawString("Player Frame# "+player.getFrame(), 300,10);
+            g.drawString("Player Action# "+player.getAction(), 550,10);
         }
+
+        // if (player.isVisible()) {
+
+        //     g.drawImage(player.getImage(), player.getX(), player.getY(), this);
+        // }
 
         if (player.isDying()) {
 
