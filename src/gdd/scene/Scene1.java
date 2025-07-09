@@ -98,19 +98,19 @@ public class Scene1 extends JPanel {
     }
 
     private void initAudio() {
-        try {
-            String filePath = "src/audio/scene1.wav";
-            audioPlayer = new AudioPlayer(filePath);
-            audioPlayer.play();
-        } catch (Exception e) {
-            System.err.println("Error initializing audio player: " + e.getMessage());
-        }
+        // try {
+        //     String filePath = "src/audio/scene1.wav";
+        //     audioPlayer = new AudioPlayer(filePath);
+        //     audioPlayer.play();
+        // } catch (Exception e) {
+        //     System.err.println("Error initializing audio player: " + e.getMessage());
+        // }
     }
 
     private void loadSpawnDetails() {
         // TODO load this from a file
         spawnMap.put(50, new SpawnDetails("PowerUp-SpeedUp", 100, 0));
-        spawnMap.put(200, new SpawnDetails("Alien1", 200, 0));
+        spawnMap.put(20, new SpawnDetails("Alien1", 200, 0));
         spawnMap.put(300, new SpawnDetails("Alien1", 300, 0));
 
         spawnMap.put(400, new SpawnDetails("Alien1", 400, 0));
@@ -237,6 +237,15 @@ public class Scene1 extends JPanel {
 
             if (enemy.isVisible()) {
 
+                // double scale = 0.8; // scale factor
+                // int scaledWidth = (int)(enemy.getWidth() * scale);
+                // int scaledHeight = (int)(enemy.getHeight() * scale);
+                // int drawX = enemy.getX() - (scaledWidth / 2);
+                // int drawY = enemy.getY() - scaledHeight;
+
+                // g.drawImage(enemy.getImage(), drawX, drawY, scaledWidth, scaledHeight, this);
+                // g.drawRect(drawX, drawY, scaledWidth, scaledHeight);
+
                 g.drawImage(enemy.getImage(), enemy.getX(), enemy.getY(), this);
             }
 
@@ -318,12 +327,12 @@ public class Scene1 extends JPanel {
 
     private void drawBombing(Graphics g) {
 
-        // for (Enemy e : enemies) {
-        //     Enemy.Bomb b = e.getBomb();
-        //     if (!b.isDestroyed()) {
-        //         g.drawImage(b.getImage(), b.getX(), b.getY(), this);
-        //     }
-        // }
+        for (Enemy e : enemies) {
+            Enemy.Bomb b = e.getBomb();
+            if (!b.isDestroyed()) {
+                g.drawImage(b.getImage(), b.getX(), b.getY(), this);
+            }
+        }
     }
 
     private void drawExplosions(Graphics g) {
@@ -474,8 +483,10 @@ public class Scene1 extends JPanel {
                             && shotY >= (enemyY)
                             && shotY <= (enemyY + ALIEN_HEIGHT)) {
 
-                        var ii = new ImageIcon(IMG_EXPLOSION);
+                        // var ii = new ImageIcon(IMG_EXPLOSION);
+                        var ii = new ImageIcon(IMG_ENEMY);
                         enemy.setImage(ii.getImage());
+                        
                         enemy.setDying(true);
                         explosions.add(new Explosion(enemyX, enemyY));
                         deaths++;
@@ -485,8 +496,8 @@ public class Scene1 extends JPanel {
                 }
 
                 int y = shot.getY();
-                // y -= 4;
-                y -= 20;
+                y -= 15;
+                // y -= 20;
 
                 if (y < 0) {
                     shot.die();
@@ -499,34 +510,33 @@ public class Scene1 extends JPanel {
         shots.removeAll(shotsToRemove);
 
         // enemies
-        // for (Enemy enemy : enemies) {
-        //     int x = enemy.getX();
-        //     if (x >= BOARD_WIDTH - BORDER_RIGHT && direction != -1) {
-        //         direction = -1;
-        //         for (Enemy e2 : enemies) {
-        //             e2.setY(e2.getY() + GO_DOWN);
-        //         }
-        //     }
-        //     if (x <= BORDER_LEFT && direction != 1) {
-        //         direction = 1;
-        //         for (Enemy e : enemies) {
-        //             e.setY(e.getY() + GO_DOWN);
-        //         }
-        //     }
-        // }
-        // for (Enemy enemy : enemies) {
-        //     if (enemy.isVisible()) {
-        //         int y = enemy.getY();
-        //         if (y > GROUND - ALIEN_HEIGHT) {
-        //             inGame = false;
-        //             message = "Invasion!";
-        //         }
-        //         enemy.act(direction);
-        //     }
-        // }
+        for (Enemy enemy : enemies) {
+            int x = enemy.getX();
+            if (x >= BOARD_WIDTH - BORDER_RIGHT && direction != -1) {
+                direction = -1;
+                for (Enemy e2 : enemies) {
+                    e2.setY(e2.getY() + GO_DOWN);
+                }
+            }
+            if (x <= BORDER_LEFT && direction != 1) {
+                direction = 1;
+                for (Enemy e : enemies) {
+                    e.setY(e.getY() + GO_DOWN);
+                }
+            }
+        }
+        for (Enemy enemy : enemies) {
+            if (enemy.isVisible()) {
+                int y = enemy.getY();
+                if (y > GROUND - ALIEN_HEIGHT) {
+                    inGame = false;
+                    message = "Invasion!";
+                }
+                enemy.act(direction);
+            }
+        }
         // bombs - collision detection
         // Bomb is with enemy, so it loops over enemies
-        /*
         for (Enemy enemy : enemies) {
 
             int chance = randomizer.nextInt(15);
@@ -563,7 +573,6 @@ public class Scene1 extends JPanel {
                 }
             }
         }
-         */
     }
 
     private void doGameCycle() {

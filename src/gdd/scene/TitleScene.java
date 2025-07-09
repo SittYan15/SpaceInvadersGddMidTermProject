@@ -68,14 +68,14 @@ public class TitleScene extends JPanel {
     }
 
     private void initAudio() {
-        try {
-            String filePath = "src/audio/title.wav";
-            audioPlayer = new AudioPlayer(filePath);
+        // try {
+        //     String filePath = "src/audio/title.wav";
+        //     audioPlayer = new AudioPlayer(filePath);
 
-            audioPlayer.play();
-        } catch (Exception e) {
-            System.err.println("Error with playing sound.");
-        }
+        //     audioPlayer.play();
+        // } catch (Exception e) {
+        //     System.err.println("Error with playing sound.");
+        // }
 
     }
 
