@@ -37,6 +37,16 @@ abstract public class Sprite {
                 && this.getY() + this.getImage().getHeight(null) > other.getY();
     }
 
+    public boolean collidesWithPlayer(Sprite player) {
+        if (player == null || !this.isVisible() || !player.isVisible()) {
+            return false;
+        }
+        return this.getX() < player.getX() + 8
+                && this.getX() + 20 > player.getX() - 8
+                && this.getY() < player.getY()
+                && this.getY() + 20 > player.getY() - 40;
+    }
+
     public void die() {
         visible = false;
     }

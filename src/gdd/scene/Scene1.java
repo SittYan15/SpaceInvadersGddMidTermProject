@@ -4,11 +4,14 @@ import gdd.AudioPlayer;
 import gdd.Game;
 import static gdd.Global.*;
 import gdd.SpawnDetails;
+import gdd.powerup.DamageUp;
 import gdd.powerup.HealthUp;
 import gdd.powerup.PowerUp;
+import gdd.powerup.ShotSizeUp;
 import gdd.powerup.SpeedUp;
 import gdd.sprite.Alien0;
 import gdd.sprite.Alien1;
+import gdd.sprite.Alien2;
 import gdd.sprite.Enemy;
 import gdd.sprite.Explosion;
 import gdd.sprite.Player;
@@ -22,10 +25,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -114,24 +120,26 @@ public class Scene1 extends JPanel {
     private void loadSpawnDetails() {
         // TODO load this from a file
         spawnMap.put(50, new SpawnDetails("PowerUp-SpeedUp", 100, 0));
-        spawnMap.put(51, new SpawnDetails("PowerUp-HealthUp", 300, 0));
+        spawnMap.put(251, new SpawnDetails("PowerUp-HealthUp", 300, 0));
+        spawnMap.put(452, new SpawnDetails("PowerUp-DamageUp", 400, 0));
+        spawnMap.put(653, new SpawnDetails("PowerUp-ShotSizeUp", 500, 0));
+
         spawnMap.put(20, new SpawnDetails("Alien0", 200, 0));
-        spawnMap.put(21, new SpawnDetails("Alien1", 250, 1));
+        spawnMap.put(21, new SpawnDetails("Alien1", 250, 0));
+        spawnMap.put(23, new SpawnDetails("Alien2", 300, 0));
 
         spawnMap.put(400, new SpawnDetails("Alien1", 400, 0));
         spawnMap.put(511, new SpawnDetails("Alien1", 450, 0));
         spawnMap.put(622, new SpawnDetails("Alien1", 500, 0));
         spawnMap.put(733, new SpawnDetails("Alien1", 550, 0));
 
+        spawnMap.put(734, new SpawnDetails("Alien2", 300, 0));
+
         spawnMap.put(810, new SpawnDetails("Alien1", 100, 0));
         spawnMap.put(921, new SpawnDetails("Alien1", 150, 0));
-        spawnMap.put(1632, new SpawnDetails("Alien1", 200, 0));
+        spawnMap.put(1632, new SpawnDetails("Alien2", 200, 0));
         spawnMap.put(1143, new SpawnDetails("Alien1", 350, 0));
-        spawnMap.put(1203, new SpawnDetails("Alien1", 350, 0));
-    }
-
-    private void initBoard() {
-
+        spawnMap.put(1203, new SpawnDetails("Alien2", 350, 0));
     }
 
     public void start() {
@@ -153,7 +161,7 @@ public class Scene1 extends JPanel {
             if (audioPlayer != null) {
                 audioPlayer.stop();
             }
-        } catch (Exception e) {
+        } catch (IOException | LineUnavailableException | UnsupportedAudioFileException e) {
             System.err.println("Error closing audio player.");
         }
     }
@@ -263,14 +271,11 @@ public class Scene1 extends JPanel {
     private void drawPowreUps(Graphics g) {
 
         for (PowerUp p : powerups) {
-
             if (p.isVisible()) {
-
                 g.drawImage(p.getImage(), p.getX(), p.getY(), this);
+                // g.drawRect(p.getX(), p.getY(), 20, 20);
             }
-
             if (p.isDying()) {
-
                 p.die();
             }
         }
@@ -286,8 +291,8 @@ public class Scene1 extends JPanel {
             int drawY = player.getY() - scaledHeight;
 
             g.drawImage(player.getImage(), drawX, drawY, scaledWidth, scaledHeight, this);
-            g.drawRect(player.getX(), player.getY(), 10, 10);
-            g.drawRect(drawX, drawY, scaledWidth, scaledHeight);
+            // g.drawRect(player.getX(), player.getY(), -12, -38);
+            // g.drawRect(drawX, drawY, scaledWidth, scaledHeight);
             g.drawString("Player Frame# " + player.getFrame(), 300, 10);
             g.drawString("Health Count# " + player.getHealth(), 430, 10);
             g.drawString("Player Action# " + player.getAction(), 550, 10);
@@ -349,8 +354,15 @@ public class Scene1 extends JPanel {
 
         for (Explosion explosion : explosions) {
 
+            int offsetX = 2;
+            int offsetY = 10;
+            if (explosion.isBig) {
+                explosion.clipNo = 0; // Big explosion
+            } else {
+                explosion.clipNo = 1; // Small explosion
+            }
             if (explosion.isVisible()) {
-                g.drawImage(explosion.getImage(), explosion.getX(), explosion.getY(), this);
+                g.drawImage(explosion.getImage(), explosion.getX() - offsetX, explosion.getY() + offsetY, this);
                 explosion.visibleCountDown();
                 if (!explosion.isVisible()) {
                     toRemove.add(explosion);
@@ -429,27 +441,25 @@ public class Scene1 extends JPanel {
             // Create a new enemy based on the spawn details
             switch (sd.type) {
                 case "Alien0" -> {
-                    Enemy enemy0 = new Alien0(sd.x, sd.y);
-                    enemies.add(enemy0);
+                    enemies.add(new Alien0(sd.x, sd.y));
                 }
                 case "Alien1" -> {
-                    Enemy enemy = new Alien1(sd.x, sd.y);
-                    enemies.add(enemy);
+                    enemies.add(new Alien1(sd.x, sd.y));
                 }
                 case "Alien2" -> {
-                    // Add more cases for different enemy types if needed
-                    // Enemy enemy2 = new Alien2(sd.x, sd.y);
-                    // enemies.add(enemy2);
+                    enemies.add(new Alien2(sd.x, sd.y));
                 }
                 case "PowerUp-SpeedUp" -> {
-                    // Handle speed up item spawn
-                    PowerUp speedUp = new SpeedUp(sd.x, sd.y);
-                    powerups.add(speedUp);
+                    powerups.add(new SpeedUp(sd.x, sd.y));
                 }
                 case "PowerUp-HealthUp" -> {
-                    // Handle health up item spawn
-                    PowerUp healthUp = new HealthUp(sd.x, sd.y);
-                    powerups.add(healthUp);
+                    powerups.add(new HealthUp(sd.x, sd.y));
+                }
+                case "PowerUp-DamageUp" -> {
+                    powerups.add(new DamageUp(sd.x, sd.y));
+                }
+                case "PowerUp-ShotSizeUp" -> {
+                    powerups.add(new ShotSizeUp(sd.x, sd.y));
                 }
                 default ->
                     System.out.println("Unknown enemy type: " + sd.type);
@@ -469,7 +479,7 @@ public class Scene1 extends JPanel {
         for (PowerUp powerup : powerups) {
             if (powerup.isVisible()) {
                 powerup.act();
-                if (powerup.collidesWith(player)) {
+                if (powerup.collidesWithPlayer(player)) {
                     powerup.upgrade(player);
                 }
             }
@@ -501,15 +511,22 @@ public class Scene1 extends JPanel {
                             && shotY >= (enemyY)
                             && shotY <= (enemyY + ALIEN_HEIGHT)) {
 
-                        // var ii = new ImageIcon(IMG_EXPLOSION);
-                        var ii = new ImageIcon(IMG_ENEMY);
-                        enemy.setImage(ii.getImage());
-
-                        enemy.setDying(true);
-                        explosions.add(new Explosion(enemyX, enemyY));
-                        deaths++;
                         shot.die();
                         shotsToRemove.add(shot);
+
+                        if (enemy.getHealth() - shotDamage > 0) {
+                            enemy.setHealth(enemy.getHealth() - shotDamage);
+                            explosions.add(new Explosion(enemyX, enemyY, false));
+                        } else {
+                            // var ii = new ImageIcon(IMG_EXPLOSION);
+                            // var ii = new ImageIcon(IMG_ENEMY);
+                            // enemy.setImage(ii.getImage());
+                            explosions.add(new Explosion(enemyX, enemyY, true));
+                            enemy.setDying(true);
+                            deaths++;
+                            shot.die();
+                            shotsToRemove.add(shot);
+                        }
                     }
                 }
 
@@ -532,15 +549,9 @@ public class Scene1 extends JPanel {
             int x = enemy.getX();
             if (x >= BOARD_WIDTH - BORDER_RIGHT && direction != -1) {
                 direction = -1;
-                for (Enemy e2 : enemies) {
-                    e2.setY(e2.getY() + GO_DOWN);
-                }
             }
             if (x <= BORDER_LEFT && direction != 1) {
                 direction = 1;
-                for (Enemy e : enemies) {
-                    e.setY(e.getY() + GO_DOWN);
-                }
             }
         }
         // Uncomment this if you want to get invation functionality
@@ -556,20 +567,42 @@ public class Scene1 extends JPanel {
         // }
         // bombs - collision detection
         // Bomb is with enemy, so it loops over enemies
-        for (Enemy enemy : enemies) {
 
-            if (enemy.getLevel() == 0) {
-                continue; // Skip Alien0
+        int offsetX = 0; 
+        int offsetY = 0;
+        int chance = 0;
+        for (Enemy enemy : enemies) {
+            switch (enemy.getLevel()) {
+                case 0 -> {
+                    continue; // Skip Alien0
+                }
+                case 1 -> {
+                    offsetX = 6;
+                    offsetY = 12;
+                    chance = randomizer.nextInt(15);
+                }
+                case 2 -> {
+                    if (randomizer.nextBoolean()) {
+                        offsetX = 2;
+                        offsetY = 14;
+                    } else {
+                        offsetX = 13;
+                        offsetY = 14;
+                    }
+                    chance = randomizer.nextInt(10);
+                }
+                default -> {
+                    System.out.println("Unknown enemy level: " + enemy.getLevel());
+                }
             }
 
-            int chance = randomizer.nextInt(15);
             Enemy.Bomb bomb = enemy.getBomb();
 
             if (chance == CHANCE && enemy.isVisible() && bomb.isDestroyed()) {
 
                 bomb.setDestroyed(false);
-                bomb.setX(enemy.getX());
-                bomb.setY(enemy.getY());
+                bomb.setX(enemy.getX() + offsetX);
+                bomb.setY(enemy.getY() + offsetY);
             }
 
             int bombX = bomb.getX();
@@ -639,7 +672,7 @@ public class Scene1 extends JPanel {
 
             if (key == KeyEvent.VK_SPACE && inGame) {
                 System.out.println("Shots: " + shots.size());
-                if (shots.size() < 4) {
+                if (shots.size() < shotSize) {
                     // Create a new shot and add it to the list
                     Shot shot = new Shot(x, y);
                     shots.add(shot);

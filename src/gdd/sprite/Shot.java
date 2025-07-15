@@ -21,12 +21,17 @@ public class Shot extends Sprite {
         var ii = new ImageIcon(IMG_SHOT);
 
         // Scale the image to use the global scaling factor
-        var scaledImage = ii.getImage().getScaledInstance(ii.getIconWidth() * SCALE_FACTOR,
-                ii.getIconHeight() * SCALE_FACTOR, 
+        var scaledImage = ii.getImage().getScaledInstance((int) (ii.getIconWidth() * 1.3),
+                (int) (ii.getIconHeight() * 1.3), 
                 java.awt.Image.SCALE_SMOOTH);
         setImage(scaledImage);
 
         setX(x + H_SPACE);
         setY(y - V_SPACE);
+    }
+
+    @Override
+    public void act() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

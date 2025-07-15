@@ -79,5 +79,11 @@ public class Enemy extends Sprite {
 
             return destroyed;
         }
+
+        @Override
+        public void act() {
+            // TODO Auto-generated method stub
+            throw new UnsupportedOperationException("Unimplemented method 'act'");
+        }
     }
 }

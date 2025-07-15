@@ -4,12 +4,12 @@ import static gdd.Global.*;
 import gdd.sprite.Player;
 import javax.swing.ImageIcon;
 
-public class DamageUp extends PowerUp {
-
-    public DamageUp(int x, int y) {
+public class ShotSizeUp extends PowerUp {
+    
+    public ShotSizeUp(int x, int y) {
         super(x, y);
         // Set image
-        ImageIcon ii = new ImageIcon(IMG_POWERUP_DAMGEUP);
+        ImageIcon ii = new ImageIcon(IMG_POWERUP_SHOTSIZEUP);
         var scaledImage = ii.getImage().getScaledInstance((int) (ii.getIconWidth() * 0.8),
                 (int) (ii.getIconHeight() * 0.8),
                 java.awt.Image.SCALE_SMOOTH);
@@ -18,15 +18,15 @@ public class DamageUp extends PowerUp {
 
     @Override
     public void act() {
-        // HealthUp specific behavior can be added here
-        // For now, it just moves down the screen
+        // ShotSizeUp specific behavior can be added here
         this.y += 2; // Move down by 2 pixel each frame
     }
 
     @Override
     public void upgrade(Player player) {
-        // Upgrade the player with health boost
-        shotDamage++; // Increase player's shot damage by 1
+        // Upgrade the player's shot size
+        shotSize++; // Increase player's shot size by 1
         this.die(); // Remove the power-up after use
     }
+
 }

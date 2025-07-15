@@ -14,11 +14,12 @@ public class Explosion extends Sprite {
         new Rectangle(26, 125, 20, 17), // 1 -> small explosion
 
     };
-    private int clipNo = 0;
-    private int frame = 0;
+    public int clipNo = 0;
+    public boolean isBig = false;
 
-    public Explosion(int x, int y) {
+    public Explosion(int x, int y, boolean isBig) {
 
+        this.isBig = isBig;
         initExplosion(x, y);
     }
 
@@ -61,16 +62,12 @@ public class Explosion extends Sprite {
     }
 
     public void act(int direction) {
-
-        // this.x += direction;
-        frame++;
-
-        clipNo = 0;
-        if (frame >= 10) {
-            clipNo = 1;
-            frame = 0;
-        }
+        this.x += direction;
     }
 
-
+    @Override
+    public void act() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'act'");
+    }
 }

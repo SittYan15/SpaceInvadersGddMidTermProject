@@ -5,25 +5,29 @@ import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 
-public class Alien0 extends Enemy {
+public class Alien2 extends Enemy {
 
-    public Alien0(int x, int y) {
-        super(x, y, 1);
+    public Alien2(int x, int y) {
+        super(x, y, 5);
     }
 
     @Override
     public void act(int direction) {
-        this.y++;
+        if (this.y < 200) {
+            this.y++;
+        } else {
+            this.x += direction;
+        }
     }
 
     @Override
     public int getLevel() {
-        return 0;
+        return 2;
     }
 
     @Override
     public Image getImage() {
-        Rectangle bound = enemy_cilp.clips[0];
+        Rectangle bound = enemy_cilp.clips[4];
         BufferedImage bImage = toBufferedImage(image);
         return bImage.getSubimage(bound.x, bound.y, bound.width, bound.height);
     }
