@@ -8,13 +8,18 @@ abstract public class Sprite {
 
     protected boolean visible;
     protected Image image;
+    protected int health;
     protected boolean dying;
+    protected boolean invincible;
+    protected int invincibleFrames;
     protected int visibleFrames = 10;
 
     protected int x;
     protected int y;
     protected int dx;
     protected int dy;
+
+    protected int level;
 
     public Sprite() {
         visible = true;
@@ -76,6 +81,10 @@ abstract public class Sprite {
         return x;
     }
 
+    public int getLevel() {
+        return level;
+    }
+
     public int getHeight() {
         return image.getHeight(null);
     }
@@ -86,6 +95,18 @@ abstract public class Sprite {
 
     public void setDying(boolean dying) {
         this.dying = dying;
+    }
+
+    public boolean isInvincible() {
+        return invincible;
+    }
+
+    public int getHealth() {
+        return health;
+    }
+
+    public void setHealth(int health) {
+        this.health = health;
     }
 
     public boolean isDying() {

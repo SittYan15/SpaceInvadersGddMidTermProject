@@ -12,13 +12,14 @@ public class Enemy extends Sprite {
 
     private Bomb bomb;
 
-    public Enemy(int x, int y) {
+    public Enemy(int x, int y, int health) {
 
-        initEnemy(x, y);
+        initEnemy(x, y, health);
     }
 
-    private void initEnemy(int x, int y) {
+    private void initEnemy(int x, int y, int health) {
 
+        this.health = health;
         this.x = x;
         this.y = y;
 
@@ -36,13 +37,6 @@ public class Enemy extends Sprite {
 
         setX(x);
         setY(y);
-    }
-
-    @Override
-    public Image getImage() {
-        Rectangle bound = enemy_cilp.clips[0];
-        BufferedImage bImage = toBufferedImage(image);
-        return bImage.getSubimage(bound.x, bound.y, bound.width, bound.height);
     }
 
     public void act(int direction) {

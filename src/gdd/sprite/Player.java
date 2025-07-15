@@ -32,6 +32,7 @@ public class Player extends Sprite {
     private static final int ACT_SPEED_UP_TURN_RIGHT = 6; // SPEED_UP_TURN_RIGHT
     private static final int ACT_SPEED_DOWN_TURN_LEFT = 7; // SPEED_DOWN_TURN_LEFT
     private static final int ACT_SPEED_DOWN_TURN_RIGHT = 8; // SPEED_DOWN_TURN_RIGHT
+    private static final int ACT_INVINCIBLE = 9; // INVINCIBLE
     private int action = ACT_STAND;
 
     public Player() {
@@ -39,6 +40,9 @@ public class Player extends Sprite {
     }
 
     private void initPlayer() {
+
+        health = 5;
+
         // var ii = new ImageIcon(IMG_PLAYER);
 
         // // Scale the image to use the global scaling factor
@@ -89,6 +93,11 @@ public class Player extends Sprite {
         }
         this.currentSpeed = speed;
         return currentSpeed;
+    }
+
+    public void setInvincible(int frames) {
+        this.invincible = true;
+        this.invincibleFrames = frames;
     }
 
     public String getAction() {
@@ -214,8 +223,29 @@ public class Player extends Sprite {
                 }
             }
 
+            case ACT_INVINCIBLE -> {
+                if (frame < 10) {
+                    clipNo = 15; // Invincible state
+                } else if (frame < 20) {
+                    clipNo = 0;
+                } else {
+                    frame = 0;
+                }
+            }
+
             default -> // ACT_STAND
                 clipNo = 0; // flying straight
+        }
+
+        if (invincible) {
+            action = ACT_INVINCIBLE;
+            this.dx = 0; // Stop movement during invincibility
+            this.dy = 0; // Stop movement during invincibility
+            invincibleFrames--;
+            if (invincibleFrames <= 0) {
+                invincible = false;
+                action = ACT_STAND; // Reset to standing after invincibility ends
+            }
         }
     }
 

@@ -4,8 +4,10 @@ import gdd.AudioPlayer;
 import gdd.Game;
 import static gdd.Global.*;
 import gdd.SpawnDetails;
+import gdd.powerup.HealthUp;
 import gdd.powerup.PowerUp;
 import gdd.powerup.SpeedUp;
+import gdd.sprite.Alien0;
 import gdd.sprite.Alien1;
 import gdd.sprite.Enemy;
 import gdd.sprite.Explosion;
@@ -32,7 +34,9 @@ public class Scene1 extends JPanel {
 
     private int frame = 0;
     private List<PowerUp> powerups;
+
     private List<Enemy> enemies;
+
     private List<Explosion> explosions;
     private List<Shot> shots;
     private Player player;
@@ -110,18 +114,20 @@ public class Scene1 extends JPanel {
     private void loadSpawnDetails() {
         // TODO load this from a file
         spawnMap.put(50, new SpawnDetails("PowerUp-SpeedUp", 100, 0));
-        spawnMap.put(20, new SpawnDetails("Alien1", 200, 0));
-        spawnMap.put(300, new SpawnDetails("Alien1", 300, 0));
+        spawnMap.put(51, new SpawnDetails("PowerUp-HealthUp", 300, 0));
+        spawnMap.put(20, new SpawnDetails("Alien0", 200, 0));
+        spawnMap.put(21, new SpawnDetails("Alien1", 250, 1));
 
         spawnMap.put(400, new SpawnDetails("Alien1", 400, 0));
-        spawnMap.put(401, new SpawnDetails("Alien1", 450, 0));
-        spawnMap.put(402, new SpawnDetails("Alien1", 500, 0));
-        spawnMap.put(403, new SpawnDetails("Alien1", 550, 0));
+        spawnMap.put(511, new SpawnDetails("Alien1", 450, 0));
+        spawnMap.put(622, new SpawnDetails("Alien1", 500, 0));
+        spawnMap.put(733, new SpawnDetails("Alien1", 550, 0));
 
-        spawnMap.put(500, new SpawnDetails("Alien1", 100, 0));
-        spawnMap.put(501, new SpawnDetails("Alien1", 150, 0));
-        spawnMap.put(502, new SpawnDetails("Alien1", 200, 0));
-        spawnMap.put(503, new SpawnDetails("Alien1", 350, 0));
+        spawnMap.put(810, new SpawnDetails("Alien1", 100, 0));
+        spawnMap.put(921, new SpawnDetails("Alien1", 150, 0));
+        spawnMap.put(1632, new SpawnDetails("Alien1", 200, 0));
+        spawnMap.put(1143, new SpawnDetails("Alien1", 350, 0));
+        spawnMap.put(1203, new SpawnDetails("Alien1", 350, 0));
     }
 
     private void initBoard() {
@@ -242,10 +248,8 @@ public class Scene1 extends JPanel {
                 // int scaledHeight = (int)(enemy.getHeight() * scale);
                 // int drawX = enemy.getX() - (scaledWidth / 2);
                 // int drawY = enemy.getY() - scaledHeight;
-
                 // g.drawImage(enemy.getImage(), drawX, drawY, scaledWidth, scaledHeight, this);
                 // g.drawRect(drawX, drawY, scaledWidth, scaledHeight);
-
                 g.drawImage(enemy.getImage(), enemy.getX(), enemy.getY(), this);
             }
 
@@ -275,9 +279,9 @@ public class Scene1 extends JPanel {
     private void drawPlayer(Graphics g) {
 
         if (player.isVisible()) {
-            double scale = 1.8; // scale factor
-            int scaledWidth = (int)(player.getWidth() * scale);
-            int scaledHeight = (int)(player.getHeight() * scale);
+            double scale = 1.2; // scale factor
+            int scaledWidth = (int) (player.getWidth() * scale);
+            int scaledHeight = (int) (player.getHeight() * scale);
             int drawX = player.getX() - (scaledWidth / 2);
             int drawY = player.getY() - scaledHeight;
 
@@ -285,6 +289,7 @@ public class Scene1 extends JPanel {
             g.drawRect(player.getX(), player.getY(), 10, 10);
             g.drawRect(drawX, drawY, scaledWidth, scaledHeight);
             g.drawString("Player Frame# " + player.getFrame(), 300, 10);
+            g.drawString("Health Count# " + player.getHealth(), 430, 10);
             g.drawString("Player Action# " + player.getAction(), 550, 10);
         }
 
@@ -328,6 +333,9 @@ public class Scene1 extends JPanel {
     private void drawBombing(Graphics g) {
 
         for (Enemy e : enemies) {
+            if (e.getLevel() == 0) {
+                continue; // Skip Alien0
+            }
             Enemy.Bomb b = e.getBomb();
             if (!b.isDestroyed()) {
                 g.drawImage(b.getImage(), b.getX(), b.getY(), this);
@@ -367,6 +375,7 @@ public class Scene1 extends JPanel {
 
         g.setColor(Color.white);
         g.drawString("FRAME: " + frame, 10, 10);
+        g.drawString("Kill Count# " + deaths, 120, 10);
 
         g.setColor(Color.green);
 
@@ -378,6 +387,7 @@ public class Scene1 extends JPanel {
             drawAliens(g);
             drawPlayer(g);
             drawShot(g);
+            drawBombing(g);
 
         } else {
 
@@ -418,23 +428,31 @@ public class Scene1 extends JPanel {
         if (sd != null) {
             // Create a new enemy based on the spawn details
             switch (sd.type) {
-                case "Alien1":
+                case "Alien0" -> {
+                    Enemy enemy0 = new Alien0(sd.x, sd.y);
+                    enemies.add(enemy0);
+                }
+                case "Alien1" -> {
                     Enemy enemy = new Alien1(sd.x, sd.y);
                     enemies.add(enemy);
-                    break;
-                // Add more cases for different enemy types if needed
-                case "Alien2":
+                }
+                case "Alien2" -> {
+                    // Add more cases for different enemy types if needed
                     // Enemy enemy2 = new Alien2(sd.x, sd.y);
                     // enemies.add(enemy2);
-                    break;
-                case "PowerUp-SpeedUp":
+                }
+                case "PowerUp-SpeedUp" -> {
                     // Handle speed up item spawn
                     PowerUp speedUp = new SpeedUp(sd.x, sd.y);
                     powerups.add(speedUp);
-                    break;
-                default:
+                }
+                case "PowerUp-HealthUp" -> {
+                    // Handle health up item spawn
+                    PowerUp healthUp = new HealthUp(sd.x, sd.y);
+                    powerups.add(healthUp);
+                }
+                default ->
                     System.out.println("Unknown enemy type: " + sd.type);
-                    break;
             }
         }
 
@@ -486,7 +504,7 @@ public class Scene1 extends JPanel {
                         // var ii = new ImageIcon(IMG_EXPLOSION);
                         var ii = new ImageIcon(IMG_ENEMY);
                         enemy.setImage(ii.getImage());
-                        
+
                         enemy.setDying(true);
                         explosions.add(new Explosion(enemyX, enemyY));
                         deaths++;
@@ -525,19 +543,24 @@ public class Scene1 extends JPanel {
                 }
             }
         }
-        for (Enemy enemy : enemies) {
-            if (enemy.isVisible()) {
-                int y = enemy.getY();
-                if (y > GROUND - ALIEN_HEIGHT) {
-                    inGame = false;
-                    message = "Invasion!";
-                }
-                enemy.act(direction);
-            }
-        }
+        // Uncomment this if you want to get invation functionality
+        // for (Enemy enemy : enemies) {
+        //     if (enemy.isVisible()) {
+        //         int y = enemy.getY();
+        //         if (y > GROUND - ALIEN_HEIGHT) {
+        //             inGame = false;
+        //             message = "Invasion!";
+        //         }
+        //         enemy.act(direction);
+        //     }
+        // }
         // bombs - collision detection
         // Bomb is with enemy, so it loops over enemies
         for (Enemy enemy : enemies) {
+
+            if (enemy.getLevel() == 0) {
+                continue; // Skip Alien0
+            }
 
             int chance = randomizer.nextInt(15);
             Enemy.Bomb bomb = enemy.getBomb();
@@ -554,20 +577,27 @@ public class Scene1 extends JPanel {
             int playerX = player.getX();
             int playerY = player.getY();
 
-            if (player.isVisible() && !bomb.isDestroyed()
-                    && bombX >= (playerX)
+            if (player.isVisible() && !bomb.isDestroyed() && !player.isInvincible()
+                    && bombX >= (playerX - PLAYER_WIDTH)
                     && bombX <= (playerX + PLAYER_WIDTH)
-                    && bombY >= (playerY)
-                    && bombY <= (playerY + PLAYER_HEIGHT)) {
+                    && bombY >= (playerY - PLAYER_HEIGHT)
+                    && bombY <= (playerY)) {
 
-                var ii = new ImageIcon(IMG_EXPLOSION);
-                player.setImage(ii.getImage());
-                player.setDying(true);
                 bomb.setDestroyed(true);
+                int health = player.getHealth();
+                if (health > 0) {
+                    health--;
+                    player.setHealth(health);
+                    player.setInvincible(30);
+                } else {
+                    var ii = new ImageIcon(IMG_EXPLOSION);
+                    player.setImage(ii.getImage());
+                    player.setDying(true);
+                }
             }
 
             if (!bomb.isDestroyed()) {
-                bomb.setY(bomb.getY() + 1);
+                bomb.setY(bomb.getY() + 5);
                 if (bomb.getY() >= GROUND - BOMB_HEIGHT) {
                     bomb.setDestroyed(true);
                 }

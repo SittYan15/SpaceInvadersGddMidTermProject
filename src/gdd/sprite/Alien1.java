@@ -1,6 +1,10 @@
 package gdd.sprite;
 
 import static gdd.Global.*;
+import gdd.image_clips.enemy_cilp;
+import java.awt.Image;
+import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
 import javax.swing.ImageIcon;
 
 public class Alien1 extends Enemy {
@@ -8,7 +12,7 @@ public class Alien1 extends Enemy {
     private Bomb bomb;
 
     public Alien1(int x, int y) {
-        super(x, y);
+        super(x, y, 2);
         // initEnemy(x, y);
     }
 
@@ -30,6 +34,18 @@ public class Alien1 extends Enemy {
 
     public void act(int direction) {
         this.y ++;
+        
+    }
+
+    public int getLevel() {
+        return 1;
+    }
+
+    @Override
+    public Image getImage() {
+        Rectangle bound = enemy_cilp.clips[1];
+        BufferedImage bImage = toBufferedImage(image);
+        return bImage.getSubimage(bound.x, bound.y, bound.width, bound.height);
     }
 
     public Bomb getBomb() {

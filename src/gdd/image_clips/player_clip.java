@@ -28,6 +28,8 @@ public class player_clip {
         new Rectangle(328, 73, 20, 38), // 13: Speed down, intro Turing Right
         new Rectangle(346, 73, 20, 38), // 14: Speed down, Turing Right
 
+        new Rectangle(121, 35, 20, 38), // 15: Player Invincible
+
     };
 
 }
