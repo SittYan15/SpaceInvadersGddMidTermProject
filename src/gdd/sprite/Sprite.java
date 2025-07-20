@@ -7,7 +7,11 @@ import java.awt.image.BufferedImage;
 abstract public class Sprite {
 
     protected boolean visible;
+    
     protected Image image;
+    protected Image shield;
+    protected Image engine;
+
     protected int health;
     protected boolean dying;
     protected boolean invincible;
@@ -73,6 +77,22 @@ abstract public class Sprite {
 
     public Image getImage() {
         return image;
+    }
+
+    public void setShield(Image shield) {
+        this.shield = shield;
+    }
+
+    public Image getShield() {
+        return shield;
+    }
+
+    public void setEngine(Image engine) {
+        this.engine = engine;
+    }
+
+    public Image getEngine() {
+        return engine;
     }
 
     public void setX(int x) {

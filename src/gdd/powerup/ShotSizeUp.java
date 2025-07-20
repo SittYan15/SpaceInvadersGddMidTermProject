@@ -25,7 +25,8 @@ public class ShotSizeUp extends PowerUp {
     @Override
     public void upgrade(Player player) {
         // Upgrade the player's shot size
-        shotSize++; // Increase player's shot size by 1
+        if (shotCooldownMillis >= 100)
+            shotCooldownMillis = shotCooldownMillis - 100; // Increase player's shot size by 1
         this.die(); // Remove the power-up after use
     }
 

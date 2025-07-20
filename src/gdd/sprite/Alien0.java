@@ -7,6 +7,8 @@ import java.awt.image.BufferedImage;
 
 public class Alien0 extends Enemy {
 
+    public int clipNo = 0;
+
     public Alien0(int x, int y) {
         super(x, y, 1);
     }
@@ -23,7 +25,7 @@ public class Alien0 extends Enemy {
 
     @Override
     public Image getImage() {
-        Rectangle bound = enemy_cilp.clips[0];
+        Rectangle bound = enemy_cilp.clips[clipNo];
         BufferedImage bImage = toBufferedImage(image);
         return bImage.getSubimage(bound.x, bound.y, bound.width, bound.height);
     }

@@ -6,25 +6,32 @@ import static gdd.Global.*;
 import gdd.SpawnDetails;
 import gdd.powerup.DamageUp;
 import gdd.powerup.HealthUp;
+import gdd.powerup.MultiShotUp;
 import gdd.powerup.PowerUp;
 import gdd.powerup.ShotSizeUp;
 import gdd.powerup.SpeedUp;
 import gdd.sprite.Alien0;
 import gdd.sprite.Alien1;
 import gdd.sprite.Alien2;
+import gdd.sprite.Boss1;
 import gdd.sprite.Enemy;
+import gdd.sprite.EnemyBoss;
 import gdd.sprite.Explosion;
 import gdd.sprite.Player;
+import gdd.sprite.Rocket;
 import gdd.sprite.Shot;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.geom.AffineTransform;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,9 +49,11 @@ public class Scene1 extends JPanel {
     private List<PowerUp> powerups;
 
     private List<Enemy> enemies;
+    private List<EnemyBoss> bosses;
 
     private List<Explosion> explosions;
     private List<Shot> shots;
+    private List<Rocket> rockets;
     private Player player;
     // private Shot shot;
 
@@ -123,6 +132,9 @@ public class Scene1 extends JPanel {
         spawnMap.put(251, new SpawnDetails("PowerUp-HealthUp", 300, 0));
         spawnMap.put(452, new SpawnDetails("PowerUp-DamageUp", 400, 0));
         spawnMap.put(653, new SpawnDetails("PowerUp-ShotSizeUp", 500, 0));
+        spawnMap.put(753, new SpawnDetails("PowerUp-GunCountUp", 350, 0));
+
+        spawnMap.put(30, new SpawnDetails("Boss1", 300, 100));
 
         spawnMap.put(20, new SpawnDetails("Alien0", 200, 0));
         spawnMap.put(21, new SpawnDetails("Alien1", 250, 0));
@@ -169,9 +181,11 @@ public class Scene1 extends JPanel {
     private void gameInit() {
 
         enemies = new ArrayList<>();
+        bosses = new ArrayList<>();
         powerups = new ArrayList<>();
         explosions = new ArrayList<>();
         shots = new ArrayList<>();
+        rockets = new ArrayList<>();
 
         // for (int i = 0; i < 4; i++) {
         // for (int j = 0; j < 6; j++) {
@@ -266,6 +280,40 @@ public class Scene1 extends JPanel {
                 enemy.die();
             }
         }
+
+        for (EnemyBoss boss : bosses) {
+
+            if (boss.isVisible()) {
+
+                Graphics2D g2d = (Graphics2D) g;
+                Image bossImg = boss.getImage();
+                int x = boss.getX();
+                int y = boss.getY();
+                int w = bossImg.getWidth(this);
+                int h = bossImg.getHeight(this);
+
+                // Save the original transform
+                AffineTransform old = g2d.getTransform();
+
+                // Flip vertically around the image's top-left corner
+                g2d.translate(x, y + h);
+                g2d.scale(1, -1);
+                g2d.drawImage(bossImg, 0, 0, this);
+
+                if (true) {
+                    Image bossShield = boss.getShield();
+                    g2d.drawImage(bossShield, 0, 0, this);
+                }
+
+                // Restore the original transform
+                g2d.setTransform(old);
+            }
+
+            if (boss.isDying()) {
+
+                boss.die();
+            }
+        }
     }
 
     private void drawPowreUps(Graphics g) {
@@ -348,6 +396,47 @@ public class Scene1 extends JPanel {
         }
     }
 
+    private void drawRockets(Graphics g) {
+
+        for (Rocket rocket : rockets) {
+            if (!rocket.isDestroyed()) {
+                // Calculate the center of the rocket image
+                // int w = img.getWidth(null);
+                // int h = img.getHeight(null);
+                // int rocketCenterX = rocketX + w / 2;
+                // int rocketCenterY = rocketY + h / 2;
+
+                int w = 10;
+                int h = 25;
+                int rocketCenterX = rocket.getX() + w / 2;
+                int rocketCenterY = rocket.getY() + h / 2;
+
+                Graphics2D g2d = (Graphics2D) g;
+                AffineTransform old = g2d.getTransform();
+
+                double angleRadians;
+                if (rocket.tracking) {
+                    // While tracking, point toward the player
+                    int playerCenterX = player.getX();
+                    int playerCenterY = player.getY();
+                    double dx = playerCenterX - rocketCenterX;
+                    double dy = playerCenterY - rocketCenterY;
+                    angleRadians = Math.atan2(dy, dx) + Math.PI / 2;
+                } else {
+                    // After tracking, keep the last angle
+                    angleRadians = Math.atan2(rocket.lastDy, rocket.lastDx) + Math.PI / 2;
+                }
+
+                g2d.translate(rocketCenterX, rocketCenterY);
+                g2d.rotate(angleRadians);
+                g2d.drawImage(rocket.getImage(), -w / 2, -h / 2, null);
+
+                g2d.setTransform(old);
+            }
+        }
+
+    }
+
     private void drawExplosions(Graphics g) {
 
         List<Explosion> toRemove = new ArrayList<>();
@@ -400,6 +489,7 @@ public class Scene1 extends JPanel {
             drawPlayer(g);
             drawShot(g);
             drawBombing(g);
+            drawRockets(g);
 
         } else {
 
@@ -435,7 +525,6 @@ public class Scene1 extends JPanel {
     private void update() {
 
         // Check enemy spawn
-        // TODO this approach can only spawn one enemy at a frame
         SpawnDetails sd = spawnMap.get(frame);
         if (sd != null) {
             // Create a new enemy based on the spawn details
@@ -449,6 +538,9 @@ public class Scene1 extends JPanel {
                 case "Alien2" -> {
                     enemies.add(new Alien2(sd.x, sd.y));
                 }
+                case "Boss1" -> {
+                    bosses.add(new Boss1(sd.x, sd.y));
+                }
                 case "PowerUp-SpeedUp" -> {
                     powerups.add(new SpeedUp(sd.x, sd.y));
                 }
@@ -460,6 +552,9 @@ public class Scene1 extends JPanel {
                 }
                 case "PowerUp-ShotSizeUp" -> {
                     powerups.add(new ShotSizeUp(sd.x, sd.y));
+                }
+                case "PowerUp-GunCountUp" -> {
+                    powerups.add(new MultiShotUp(sd.x, sd.y));
                 }
                 default ->
                     System.out.println("Unknown enemy type: " + sd.type);
@@ -489,6 +584,12 @@ public class Scene1 extends JPanel {
         for (Enemy enemy : enemies) {
             if (enemy.isVisible()) {
                 enemy.act(direction);
+            }
+        }
+
+        for (EnemyBoss boss : bosses) {
+            if (boss.isVisible()) {
+                boss.act(direction);
             }
         }
 
@@ -530,6 +631,57 @@ public class Scene1 extends JPanel {
                     }
                 }
 
+                for (EnemyBoss boss : bosses) {
+                    // Collision detection: shot and enemy
+                    int enemyX = boss.getX();
+                    int enemyY = boss.getY();
+
+                    if (boss.isVisible() && shot.isVisible()
+                            && shotX >= (enemyX + 25)
+                            && shotX <= (enemyX + boss.getWidth() - 25)
+                            && shotY >= (enemyY)
+                            && shotY <= (enemyY + boss.getHeight())) {
+
+                        shot.die();
+                        shotsToRemove.add(shot);
+
+                        if (boss.getHealth() - shotDamage > 0) {
+                            boss.setHealth(boss.getHealth() - shotDamage);
+                            explosions.add(new Explosion(enemyX, enemyY, false));
+                        } else {
+                            // var ii = new ImageIcon(IMG_EXPLOSION);
+                            // var ii = new ImageIcon(IMG_ENEMY);
+                            // enemy.setImage(ii.getImage());
+                            explosions.add(new Explosion(enemyX, enemyY, true));
+                            boss.setDying(true);
+                            deaths = deaths + 5;
+                            shot.die();
+                            shotsToRemove.add(shot);
+                        }
+                    }
+                }
+
+                List<Rocket> rocketsToRemove = new ArrayList<>();
+                for (Rocket rocket : rockets) {
+                    // Collision detection: shot and enemy
+                    int rocketX = rocket.getX();
+                    int rocketY = rocket.getY();
+
+                    if (!rocket.isDestroyed() && shot.isVisible()
+                            && shotX >= (rocketX - 5)
+                            && shotX <= (rocketX + rocket.getWidth() - 25)
+                            && shotY >= (rocketY)
+                            && shotY <= (rocketY + rocket.getHeight())) {
+
+                        shot.die();
+                        shotsToRemove.add(shot);
+                        rocket.setDestroyed(true);
+                        rocketsToRemove.add(rocket);
+                        explosions.add(new Explosion(rocketX, rocketY, false));
+                    }
+                }
+                rockets.removeAll(rocketsToRemove);
+
                 int y = shot.getY();
                 y -= 15;
                 // y -= 20;
@@ -543,6 +695,70 @@ public class Scene1 extends JPanel {
             }
         }
         shots.removeAll(shotsToRemove);
+
+        // Rocket
+        List<Rocket> rocketsToRemove = new ArrayList<>();
+        for (Rocket rocket : rockets) {
+            if (rocket.isVisible()) {
+
+                int rocketX = rocket.getX();
+                int rocketY = rocket.getY();
+                int playerX = player.getX();
+                int playerY = player.getY();
+
+                if (player.isVisible() && !rocket.isDestroyed() && !player.isInvincible()
+                        && rocketX >= (playerX - PLAYER_WIDTH)
+                        && rocketX <= (playerX + PLAYER_WIDTH)
+                        && rocketY >= (playerY - PLAYER_HEIGHT)
+                        && rocketY <= (playerY)) {
+                    rocket.setDestroyed(true);
+                    rocketsToRemove.add(rocket);
+                    int health = player.getHealth();
+                    if (health > 0) {
+                        health--;
+                        player.setHealth(health);
+                        player.setInvincible(30);
+                    } else {
+                        var ii = new ImageIcon(IMG_EXPLOSION);
+                        player.setImage(ii.getImage());
+                        player.setDying(true);
+                    }
+                }
+
+                // Calculate direction vector
+                double dx = playerX - rocketX;
+                double dy = playerY - rocketY;
+                double distance = Math.sqrt(dx * dx + dy * dy);
+
+                // Set rocket speed (pixels per frame)
+                double speed = 2.0;
+                // Normalize direction and update rocket position
+                if (rocketY > playerY) rocket.tracking = false;
+
+                if (distance != 0 & rocket.tracking) {
+                    double moveDx = speed * dx / distance;
+                    double moveDy = speed * dy / distance;
+                    rocket.lastDx = moveDx;
+                    rocket.lastDy = moveDy;
+                    rocketX += (int) Math.round(moveDx);
+                    rocketY += (int) Math.round(moveDy);
+                    rocket.setX(rocketX);
+                    rocket.setY(rocketY);
+                } else {
+                    // Move in the last direction (straight line)
+                    rocketX += (int) Math.round(rocket.lastDx);
+                    rocketY += (int) Math.round(rocket.lastDy);
+                    rocket.setX(rocketX);
+                    rocket.setY(rocketY);
+                }
+                // Destroy rocket if it goes out of bounds
+                if (rocketY >= GROUND - BOMB_HEIGHT || rocketX < 0 || rocketX > BOARD_WIDTH) {
+                    rocket.setDestroyed(true);
+                    rocketsToRemove.add(rocket);
+                }
+            }
+        }
+        rockets.removeAll(rocketsToRemove);
 
         // enemies
         for (Enemy enemy : enemies) {
@@ -568,7 +784,7 @@ public class Scene1 extends JPanel {
         // bombs - collision detection
         // Bomb is with enemy, so it loops over enemies
 
-        int offsetX = 0; 
+        int offsetX = 0;
         int offsetY = 0;
         int chance = 0;
         for (Enemy enemy : enemies) {
@@ -636,6 +852,17 @@ public class Scene1 extends JPanel {
                 }
             }
         }
+
+        chance = randomizer.nextInt(50);
+        for (EnemyBoss boss : bosses) {
+
+            // Rocket
+            if (chance == CHANCE) {
+                rockets.add(new Rocket(boss.getX(), boss.getY()));
+
+                System.out.println("Rocket!!!!!");
+            }
+        }
     }
 
     private void doGameCycle() {
@@ -671,11 +898,38 @@ public class Scene1 extends JPanel {
             int key = e.getKeyCode();
 
             if (key == KeyEvent.VK_SPACE && inGame) {
+                long now = System.currentTimeMillis();
                 System.out.println("Shots: " + shots.size());
-                if (shots.size() < shotSize) {
+                if (now - lastShotTime >= shotCooldownMillis) {
                     // Create a new shot and add it to the list
-                    Shot shot = new Shot(x, y);
-                    shots.add(shot);
+                    switch (gunCount) {
+                        case 1 -> {
+                            Shot shot = new Shot(x, y);
+                            shots.add(shot);
+                            lastShotTime = now;
+                        }
+                        case 2 -> {
+                            Shot shot = new Shot(x - 8, y + 15);
+                            shots.add(shot);
+                            shot = new Shot(x + 8, y + 15);
+                            shots.add(shot);
+                            lastShotTime = now;
+                        }
+                        case 3 -> {
+                            Shot shot = new Shot(x - 10, y + 15);
+                            shots.add(shot);
+                            shot = new Shot(x, y);
+                            shots.add(shot);
+                            shot = new Shot(x + 10, y + 15);
+                            shots.add(shot);
+                            lastShotTime = now;
+                        }
+                        default -> {
+                            Shot shot = new Shot(x, y);
+                            shots.add(shot);
+                            lastShotTime = now;
+                        }
+                    }
                 }
             }
 

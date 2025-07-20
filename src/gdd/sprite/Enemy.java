@@ -49,6 +49,11 @@ public class Enemy extends Sprite {
         return bomb;
     }
 
+    @Override
+    public void act() {
+
+    }
+
     public class Bomb extends Sprite {
 
         private boolean destroyed;

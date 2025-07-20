@@ -16,6 +16,8 @@ public class Explosion extends Sprite {
     };
     public int clipNo = 0;
     public boolean isBig = false;
+    
+    private int frame = 0;
 
     public Explosion(int x, int y, boolean isBig) {
 

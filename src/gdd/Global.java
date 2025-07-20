@@ -7,10 +7,13 @@ public class Global {
     }
 
     public static int shotDamage = 1;
-    public static int shotSize = 1;
+    public static int gunCount = 1;
+
+    public static long lastShotTime = 0;
+    public static long shotCooldownMillis = 500;
 
     public static final int SCALE_FACTOR = 2; // Scaling factor for sprites
-
+    public static final double BOSS_SCALE_FACTOR = 0.7;
     public static final double SCALE_DOWN_FACTOR = 0.4; // Scaling down factor for images
 
     public static final int BOARD_WIDTH = 716; // Doubled from 358
@@ -38,6 +41,13 @@ public class Global {
 
     // Images
     public static final String IMG_ENEMY = "src/images/NVTurboEnemy.png";
+
+    public static final String IMG_BOSS1 = "src/Foozle_Enemy_1/Kla'ed/Base/PNGs/Kla'ed - Battlecruiser - Base.png";
+    public static final String IMG_BOSS1_ENGINES = "src/Foozle_Enemy_1/Kla'ed/Engine/PNGs/Kla'ed - Battlecruiser - Engine.png";
+    public static final String IMG_BOSS1_SHIELDS = "src/Foozle_Enemy_1/Kla'ed/Shield/PNGs/Kla'ed - Battlecruiser - Shield.png";
+
+    public static final String IMG_ROCKET1 = "src/Foozle_Enemy_1/Kla'ed/Projectiles/PNGs/Kla'ed - Torpedo.png";
+
     public static final String IMG_PLAYER = "src/images/NVTurboPlayerV2.png";
     public static final String IMG_SHOT = "src/images/NV_Shot.png";
     public static final String IMG_EXPLOSION = "src/images/explosion.png";
@@ -47,4 +57,5 @@ public class Global {
     public static final String IMG_POWERUP_HEALTHUP = "src/images/powerup_health.png";
     public static final String IMG_POWERUP_SHOTSIZEUP = "src/images/powerup_bulletUp.png";
     public static final String IMG_POWERUP_DAMGEUP = "src/images/powerup_damageUp.png";
+    public static final String IMG_POWERUP_MULTISHOTUP = "src/images/laser_gun.png";
 }
