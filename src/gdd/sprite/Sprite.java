@@ -11,8 +11,13 @@ abstract public class Sprite {
     protected Image image;
     protected Image shield;
     protected Image engine;
+    protected Image weapon;
+    protected Image destroy;
 
     protected int health;
+    protected int maxHealth;
+    protected double power;
+    protected int maxPower;
     protected boolean dying;
     protected boolean invincible;
     protected int invincibleFrames;
@@ -95,6 +100,22 @@ abstract public class Sprite {
         return engine;
     }
 
+    public void setWeapon(Image weapon) {
+        this.weapon = weapon;
+    }
+
+    public Image getWeapon() {
+        return weapon;
+    }
+
+    public void setDestroy(Image destroy) {
+        this.destroy = destroy;
+    }
+
+    public Image getDestroy() {
+        return destroy;
+    }
+
     public void setX(int x) {
         this.x = x;
     }
@@ -137,6 +158,30 @@ abstract public class Sprite {
 
     public void setHealth(int health) {
         this.health = health;
+    }
+
+    public int getMaxHeath() {
+        return maxHealth;
+    }
+
+    public void setMaxHealth(int maxHealth) {
+        this.maxHealth = maxHealth;
+    }
+
+    public void setPower(double power) {
+        this.power = power;
+    }
+
+    public double getPower() {
+        return power;
+    }
+
+    public int getMaxPower() {
+        return maxPower;
+    }
+
+    public void setMaxPower(int maxPower) {
+        this.maxPower = maxPower;
     }
 
     public boolean isDying() {

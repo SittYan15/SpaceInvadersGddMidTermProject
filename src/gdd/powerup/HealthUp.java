@@ -26,7 +26,7 @@ public class HealthUp extends PowerUp {
     @Override
     public void upgrade(Player player) {
         // Upgrade the player with health boost
-        player.setHealth(player.getHealth() + 1); // Increase player's health by 1
+        if (!(player.getHealth() + 1 > player.getMaxHeath())) player.setHealth(player.getHealth() + 1); // Increase player's health by 1
         this.die(); // Remove the power-up after use
     }
 

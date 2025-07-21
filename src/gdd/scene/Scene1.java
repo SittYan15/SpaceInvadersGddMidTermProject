@@ -134,7 +134,7 @@ public class Scene1 extends JPanel {
         spawnMap.put(653, new SpawnDetails("PowerUp-ShotSizeUp", 500, 0));
         spawnMap.put(753, new SpawnDetails("PowerUp-GunCountUp", 350, 0));
 
-        spawnMap.put(30, new SpawnDetails("Boss1", 300, 100));
+        spawnMap.put(30, new SpawnDetails("Boss1", 300, -100));
 
         spawnMap.put(20, new SpawnDetails("Alien0", 200, 0));
         spawnMap.put(21, new SpawnDetails("Alien1", 250, 0));
@@ -152,6 +152,8 @@ public class Scene1 extends JPanel {
         spawnMap.put(1632, new SpawnDetails("Alien2", 200, 0));
         spawnMap.put(1143, new SpawnDetails("Alien1", 350, 0));
         spawnMap.put(1203, new SpawnDetails("Alien2", 350, 0));
+
+        spawnMap.put(300, new SpawnDetails("RocketMode", 0, 0));
     }
 
     public void start() {
@@ -236,6 +238,97 @@ public class Scene1 extends JPanel {
 
     }
 
+    private void drawHealthBar(Graphics g) {
+        int maxHealth = player.getMaxHeath(); // Set this to your player's max health
+        int health = player.getHealth();
+        int barWidth = 100;
+        int barHeight = 12;
+        int x = 20;
+        int y = 30;
+
+        // Draw background
+        g.setColor(Color.DARK_GRAY);
+        g.fillRect(x, y, barWidth, barHeight);
+
+        // Draw health
+        int healthWidth = (int) ((double) health / maxHealth * barWidth);
+        g.setColor(Color.RED);
+        g.fillRect(x, y, healthWidth, barHeight);
+
+        // Draw border
+        g.setColor(Color.WHITE);
+        g.drawRect(x, y, barWidth, barHeight);
+
+        // Draw text
+        g.setFont(new Font("Helvetica", Font.BOLD, 12));
+        g.drawString("Health: " + health + "/" + maxHealth, x + 5, y + barHeight - 2);
+    }
+
+    private void drawPowerBar(Graphics g) {
+        int maxPower = player.getMaxPower(); // Set this to your player's max health
+        double power = player.getPower();
+        int barWidth = 100;
+        int barHeight = 12;
+        int x = 20;
+        int y = 50;
+
+        // Draw background
+        g.setColor(Color.DARK_GRAY);
+        g.fillRect(x, y, barWidth, barHeight);
+
+        // Draw health
+        int healthWidth = (int) ((double) power / maxPower * barWidth);
+        g.setColor(Color.BLUE);
+        g.fillRect(x, y, healthWidth, barHeight);
+
+        // Draw border
+        g.setColor(Color.WHITE);
+        g.drawRect(x, y, barWidth, barHeight);
+
+        // Draw text
+        g.setFont(new Font("Helvetica", Font.BOLD, 12));
+        g.drawString("Power: " + String.format("%.1f", power) + "/" + maxPower, x + 5, y + barHeight - 2);
+    }
+
+    private void drawBossHealthBar(Graphics g, EnemyBoss boss, boolean isShielded) {
+
+        int maxHealth = boss.getMaxHeath(); // Set this to your player's max health
+        double health = boss.getHealth();
+        int barWidth = 100;
+        int barHeight = 5;
+        int x = boss.getX() + 14;
+        int y = boss.getY() + 13;
+
+        // Draw background
+        g.setColor(Color.DARK_GRAY);
+        g.fillRect(x, y, barWidth, barHeight);
+
+        // Draw health
+        int healthWidth = (int) ((double) health / maxHealth * barWidth);
+        g.setColor(Color.RED);
+        g.fillRect(x, y, healthWidth, barHeight);
+
+        // Draw border
+        g.setColor(Color.WHITE);
+        g.drawRect(x, y, barWidth, barHeight);
+
+        if (isShielded) {
+
+            // Draw background
+            g.setColor(Color.DARK_GRAY);
+            g.fillRect(x, y - 8, barWidth, barHeight);
+
+            // Draw Shield Health
+            int shieldWidth = (int) ((double) boss.getShieldHealth() / boss.getMaxShieldHealth() * barWidth);
+            g.setColor(Color.BLUE);
+            g.fillRect(x, y - 8, shieldWidth, barHeight);
+            
+            // Draw border
+            g.setColor(Color.WHITE);
+            g.drawRect(x, y - 8, barWidth, barHeight);
+        }
+    }
+
     private void drawStarCluster(Graphics g, int x, int y, int width, int height) {
         // Set star color to white
         g.setColor(Color.WHITE);
@@ -298,15 +391,25 @@ public class Scene1 extends JPanel {
                 // Flip vertically around the image's top-left corner
                 g2d.translate(x, y + h);
                 g2d.scale(1, -1);
+
+                // draw Alien Base
                 g2d.drawImage(bossImg, 0, 0, this);
 
-                if (true) {
+                if (boss.getisAlive()) {
+                    Image bossEngine = boss.getEngine();
+                    g2d.drawImage(bossEngine, 0, 0, this);
+                }
+
+                if (boss.getShielded()) {
                     Image bossShield = boss.getShield();
                     g2d.drawImage(bossShield, 0, 0, this);
                 }
 
                 // Restore the original transform
                 g2d.setTransform(old);
+                if (boss.getisAlive()) {
+                    drawBossHealthBar(g, boss, boss.getShielded());
+                }
             }
 
             if (boss.isDying()) {
@@ -344,6 +447,9 @@ public class Scene1 extends JPanel {
             g.drawString("Player Frame# " + player.getFrame(), 300, 10);
             g.drawString("Health Count# " + player.getHealth(), 430, 10);
             g.drawString("Player Action# " + player.getAction(), 550, 10);
+
+            //making lazer
+            // g.drawImage(player.getLazerRay(), 300, 400, l this);
         }
 
         if (player.isDying()) {
@@ -490,6 +596,8 @@ public class Scene1 extends JPanel {
             drawShot(g);
             drawBombing(g);
             drawRockets(g);
+            drawHealthBar(g);
+            drawPowerBar(g);
 
         } else {
 
@@ -520,6 +628,46 @@ public class Scene1 extends JPanel {
         g.setFont(small);
         g.drawString(message, (BOARD_WIDTH - fontMetrics.stringWidth(message)) / 2,
                 BOARD_WIDTH / 2);
+    }
+
+    private void fireShot() {
+
+        int x = player.getX();
+        int y = player.getY();
+
+        long now = System.currentTimeMillis();
+        System.out.println("Shots: " + shots.size());
+        if (now - lastShotTime >= shotCooldownMillis) {
+            // Create a new shot and add it to the list
+            switch (gunCount) {
+                case 1 -> {
+                    Shot shot = new Shot(x, y);
+                    shots.add(shot);
+                    lastShotTime = now;
+                }
+                case 2 -> {
+                    Shot shot = new Shot(x - 8, y + 15);
+                    shots.add(shot);
+                    shot = new Shot(x + 8, y + 15);
+                    shots.add(shot);
+                    lastShotTime = now;
+                }
+                case 3 -> {
+                    Shot shot = new Shot(x - 10, y + 15);
+                    shots.add(shot);
+                    shot = new Shot(x, y);
+                    shots.add(shot);
+                    shot = new Shot(x + 10, y + 15);
+                    shots.add(shot);
+                    lastShotTime = now;
+                }
+                default -> {
+                    Shot shot = new Shot(x, y);
+                    shots.add(shot);
+                    lastShotTime = now;
+                }
+            }
+        }
     }
 
     private void update() {
@@ -555,6 +703,11 @@ public class Scene1 extends JPanel {
                 }
                 case "PowerUp-GunCountUp" -> {
                     powerups.add(new MultiShotUp(sd.x, sd.y));
+                }
+                case "RocketMode" -> {
+                    for (int i = 1; i < 600; i = i + 20) {
+                        rockets.add(new Rocket(i, 0));
+                    }
                 }
                 default ->
                     System.out.println("Unknown enemy type: " + sd.type);
@@ -624,6 +777,20 @@ public class Scene1 extends JPanel {
                             // enemy.setImage(ii.getImage());
                             explosions.add(new Explosion(enemyX, enemyY, true));
                             enemy.setDying(true);
+                            if (enemy.getLevel() == 0) {
+                                if (player.getPower() + 0.3 > player.getMaxPower()) {
+                                    player.setPower(player.getMaxPower()); 
+                                }else {
+                                    player.setPower(player.getPower() + 0.3);
+                                }
+                            } else {
+                                double powerToAdd = (double) enemy.getLevel() / 2;
+                                if (player.getPower() + powerToAdd > player.getMaxPower()) {
+                                    player.setPower(player.getMaxPower()); 
+                                }else {
+                                    player.setPower(player.getPower() + ((double) enemy.getLevel() / 2));
+                                }
+                            }
                             deaths++;
                             shot.die();
                             shotsToRemove.add(shot);
@@ -645,18 +812,36 @@ public class Scene1 extends JPanel {
                         shot.die();
                         shotsToRemove.add(shot);
 
-                        if (boss.getHealth() - shotDamage > 0) {
-                            boss.setHealth(boss.getHealth() - shotDamage);
-                            explosions.add(new Explosion(enemyX, enemyY, false));
+                        if (!boss.getShielded()) {
+                            if (boss.getHealth() - shotDamage > 0) {
+                                boss.setHealth(boss.getHealth() - shotDamage);
+                                if (boss.getHealth() < 10 && !boss.getShielded()) {
+                                    boss.setShieldHealth(boss.getMaxShieldHealth());
+                                    boss.setShielded(true);
+                                }
+                                explosions.add(new Explosion(enemyX, enemyY, false));
+                            } else {
+                                // var ii = new ImageIcon(IMG_EXPLOSION);
+                                // var ii = new ImageIcon(IMG_ENEMY);
+                                // enemy.setImage(ii.getImage());
+                                explosions.add(new Explosion(enemyX, enemyY, true));
+                                // boss.setDying(true);
+                                boss.setisAlive(false);
+                                if (player.getPower() + 3 > player.getMaxPower()) {
+                                    player.setPower(player.getMaxPower()); 
+                                }else {
+                                    player.setPower(player.getPower() + 3);
+                                }
+                                deaths = deaths + 5;
+                                shot.die();
+                                shotsToRemove.add(shot);
+                            }
                         } else {
-                            // var ii = new ImageIcon(IMG_EXPLOSION);
-                            // var ii = new ImageIcon(IMG_ENEMY);
-                            // enemy.setImage(ii.getImage());
-                            explosions.add(new Explosion(enemyX, enemyY, true));
-                            boss.setDying(true);
-                            deaths = deaths + 5;
-                            shot.die();
-                            shotsToRemove.add(shot);
+                            if (boss.getShieldHealth() - shotDamage > 0) {
+                                boss.setShieldHealth(boss.getShieldHealth() - shotDamage);
+                            } else {
+                                boss.setShielded(false);
+                            }
                         }
                     }
                 }
@@ -675,6 +860,11 @@ public class Scene1 extends JPanel {
 
                         shot.die();
                         shotsToRemove.add(shot);
+                        if (player.getPower() + 0.2 > player.getMaxPower()) {
+                            player.setPower(player.getMaxPower()); 
+                        }else {
+                            player.setPower(player.getPower() + 0.2);
+                        }
                         rocket.setDestroyed(true);
                         rocketsToRemove.add(rocket);
                         explosions.add(new Explosion(rocketX, rocketY, false));
@@ -731,9 +921,11 @@ public class Scene1 extends JPanel {
                 double distance = Math.sqrt(dx * dx + dy * dy);
 
                 // Set rocket speed (pixels per frame)
-                double speed = 2.0;
+                double speed = rocketSpeed;
                 // Normalize direction and update rocket position
-                if (rocketY > playerY) rocket.tracking = false;
+                if (rocketY > playerY) {
+                    rocket.tracking = false;
+                }
 
                 if (distance != 0 & rocket.tracking) {
                     double moveDx = speed * dx / distance;
@@ -863,6 +1055,8 @@ public class Scene1 extends JPanel {
                 System.out.println("Rocket!!!!!");
             }
         }
+
+        if (spacePressed) fireShot();
     }
 
     private void doGameCycle() {
@@ -883,6 +1077,10 @@ public class Scene1 extends JPanel {
 
         @Override
         public void keyReleased(KeyEvent e) {
+            int key = e.getKeyCode();
+            if (key == KeyEvent.VK_SPACE) {
+                spacePressed = false;
+            }
             player.keyReleased(e);
         }
 
@@ -892,45 +1090,10 @@ public class Scene1 extends JPanel {
 
             player.keyPressed(e);
 
-            int x = player.getX();
-            int y = player.getY();
-
             int key = e.getKeyCode();
 
             if (key == KeyEvent.VK_SPACE && inGame) {
-                long now = System.currentTimeMillis();
-                System.out.println("Shots: " + shots.size());
-                if (now - lastShotTime >= shotCooldownMillis) {
-                    // Create a new shot and add it to the list
-                    switch (gunCount) {
-                        case 1 -> {
-                            Shot shot = new Shot(x, y);
-                            shots.add(shot);
-                            lastShotTime = now;
-                        }
-                        case 2 -> {
-                            Shot shot = new Shot(x - 8, y + 15);
-                            shots.add(shot);
-                            shot = new Shot(x + 8, y + 15);
-                            shots.add(shot);
-                            lastShotTime = now;
-                        }
-                        case 3 -> {
-                            Shot shot = new Shot(x - 10, y + 15);
-                            shots.add(shot);
-                            shot = new Shot(x, y);
-                            shots.add(shot);
-                            shot = new Shot(x + 10, y + 15);
-                            shots.add(shot);
-                            lastShotTime = now;
-                        }
-                        default -> {
-                            Shot shot = new Shot(x, y);
-                            shots.add(shot);
-                            lastShotTime = now;
-                        }
-                    }
-                }
+                spacePressed = true;
             }
 
         }

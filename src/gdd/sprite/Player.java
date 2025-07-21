@@ -14,6 +14,8 @@ public class Player extends Sprite {
     private static final int START_Y = 540;
     private int width;
     private int currentSpeed = 2;
+    private Image lazerRay;
+    private int lazerClipNo = 0;
 
     private int frame = 0;
 
@@ -41,17 +43,16 @@ public class Player extends Sprite {
 
     private void initPlayer() {
 
-        health = 5;
+        setHealth(10);
+        setMaxHealth(10);
+        setPower(0);
+        setMaxPower(10);
 
-        // var ii = new ImageIcon(IMG_PLAYER);
-
-        // // Scale the image to use the global scaling factor
-        // var scaledImage = ii.getImage().getScaledInstance(ii.getIconWidth() * SCALE_FACTOR,
-        //         ii.getIconHeight() * SCALE_FACTOR,
-        //         java.awt.Image.SCALE_SMOOTH);
-        // setImage(scaledImage);
         var ii = new ImageIcon(IMG_PLAYER);
         setImage(ii.getImage());
+
+        var iiLazer = new ImageIcon(IMG_LASER_RAY);
+        setLazerRay(iiLazer.getImage());
 
         setX(START_X);
         setY(START_Y);
@@ -75,10 +76,19 @@ public class Player extends Sprite {
         return player_clip.clips[clipNo].width;
     }
 
+    public void setLazerRay(Image lazerRay) {
+        this.lazerRay = lazerRay;
+    }
+
+    public Image getLazerRay() {
+        Rectangle bound = player_clip.lazerClips[lazerClipNo];
+        BufferedImage bImage = toBufferedImage(lazerRay);
+        return bImage.getSubimage(bound.x, bound.y, bound.width, bound.height);
+    }
+
     @Override
     public Image getImage() {
         Rectangle bound = player_clip.clips[clipNo];
-        // TODO this can be cached.
         BufferedImage bImage = toBufferedImage(image);
         return bImage.getSubimage(bound.x, bound.y, bound.width, bound.height);
     }

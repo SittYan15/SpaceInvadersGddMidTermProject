@@ -32,4 +32,8 @@ public class player_clip {
 
     };
 
+    public static final Rectangle[] lazerClips = new Rectangle[] {
+        new Rectangle(0, 0, 20, 38),
+    };
+
 }
