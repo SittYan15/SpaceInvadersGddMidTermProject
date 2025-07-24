@@ -7,8 +7,8 @@ public class Global {
     }
     public static boolean spacePressed = false;
 
-    public static int shotDamage = 1;
-    public static int gunCount = 3;
+    public static int shotDamage = 3;
+    public static int gunCount = 1;
     public static double rocketSpeed = 3.0;
 
     public static long lastShotTime = 0;
@@ -49,6 +49,7 @@ public class Global {
     public static final String IMG_BOSS1_SHIELDS = "src/Foozle_Enemy_1/Kla'ed/Shield/PNGs/Kla'ed - Battlecruiser - Shield.png";
     public static final String IMG_BOSS1_DESTRUCTION = "src/Foozle_Enemy_1/Kla'ed/Destruction/PNGs/Kla'ed - Battlecruiser - Destruction.png";
     public static final String IMG_BOSS1_WEAPON = "src/Foozle_Enemy_1/Kla'ed/Weapons/PNGs/Kla'ed - Battlecruiser - Weapons.png";
+    public static final String IMG_BOSS1_POWERMODE = "src/Foozle_Enemy_1/Kla'ed/Weapons/PNGs/Kla'ed - Battlecruiser - Weapons.png";
 
     public static final String IMG_ROCKET1 = "src/Foozle_Enemy_1/Kla'ed/Projectiles/PNGs/Kla'ed - Torpedo.png";
 

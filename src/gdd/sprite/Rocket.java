@@ -4,7 +4,6 @@ import static gdd.Global.*;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-
 import javax.swing.ImageIcon;
 
 public class Rocket extends Sprite{
@@ -16,6 +15,9 @@ public class Rocket extends Sprite{
 
     public boolean tracking = true;
     public double lastDx = 0, lastDy = 0;
+    public boolean isSpeeding = false;
+    public int straightFrames = 15; 
+    public int framesMoved = 0; 
 
     public int clipsNoRocket = 2;
     public final Rectangle[] clips_rocket = new Rectangle[]{
@@ -30,6 +32,17 @@ public class Rocket extends Sprite{
 
     public Rocket(int x, int y) {
 
+        initShot(x, y);
+    }
+
+    public Rocket(int x, int y, boolean isSpeeding, double initialDx, double initialDy, int straightFrames) {
+
+        this.isSpeeding = isSpeeding;
+        this.lastDx = initialDx;
+        this.lastDy = initialDy;
+        this.tracking = false;
+        this.framesMoved = 0;
+        this.straightFrames = straightFrames;
         initShot(x, y);
     }
 

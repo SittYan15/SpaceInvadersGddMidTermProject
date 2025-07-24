@@ -13,6 +13,7 @@ abstract public class Sprite {
     protected Image engine;
     protected Image weapon;
     protected Image destroy;
+    protected Image powerMode;
 
     protected int health;
     protected int maxHealth;
@@ -98,6 +99,14 @@ abstract public class Sprite {
 
     public Image getEngine() {
         return engine;
+    }
+
+    public void setPowerMode(Image powerMode) {
+        this.powerMode = powerMode;
+    }
+
+    public Image getPowerMode() {
+        return powerMode;
     }
 
     public void setWeapon(Image weapon) {

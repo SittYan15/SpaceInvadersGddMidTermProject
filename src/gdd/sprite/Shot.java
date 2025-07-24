@@ -7,12 +7,14 @@ public class Shot extends Sprite {
 
     private static final int H_SPACE = -1;
     private static final int V_SPACE = 38;
+    private int damage;
 
     public Shot() {
     }
 
     public Shot(int x, int y) {
 
+        damage = shotDamage; // Initialize damage with the global shot damage
         initShot(x, y);
     }
 
@@ -28,6 +30,14 @@ public class Shot extends Sprite {
 
         setX(x + H_SPACE);
         setY(y - V_SPACE);
+    }
+
+    public void setDamage(int damage) {
+        this.damage = damage;
+    }
+
+    public int getDamage() {
+        return damage;
     }
 
     @Override

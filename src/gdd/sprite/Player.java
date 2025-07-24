@@ -18,6 +18,7 @@ public class Player extends Sprite {
     private int lazerClipNo = 0;
 
     private int frame = 0;
+    private int lazerFrame = 0;
 
     public static final int DIR_LEFT = 0;
     public static final int DIR_RIGHT = 1;
@@ -149,6 +150,15 @@ public class Player extends Sprite {
     public void act() {
 
         frame++;
+        lazerFrame++;
+
+        if (lazerFrame > 4) {
+            lazerClipNo++;
+            if (lazerClipNo > 2) {
+                lazerClipNo = 0;
+            }
+            lazerFrame = 0;
+        }
 
         x += dx;
         y += dy;

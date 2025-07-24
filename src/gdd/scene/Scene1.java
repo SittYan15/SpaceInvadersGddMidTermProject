@@ -17,6 +17,7 @@ import gdd.sprite.Boss1;
 import gdd.sprite.Enemy;
 import gdd.sprite.EnemyBoss;
 import gdd.sprite.Explosion;
+import gdd.sprite.LazerRay;
 import gdd.sprite.Player;
 import gdd.sprite.Rocket;
 import gdd.sprite.Shot;
@@ -54,6 +55,7 @@ public class Scene1 extends JPanel {
     private List<Explosion> explosions;
     private List<Shot> shots;
     private List<Rocket> rockets;
+    private List<LazerRay> lazers;
     private Player player;
     // private Shot shot;
 
@@ -73,6 +75,8 @@ public class Scene1 extends JPanel {
 
     private Timer timer;
     private final Game game;
+
+    private long lazerActivatedTime = 0;
 
     private int currentRow = -1;
     // TODO load this map from a file
@@ -125,6 +129,49 @@ public class Scene1 extends JPanel {
         //     System.err.println("Error initializing audio player: " + e.getMessage());
         // }
     }
+
+    // private void loadSpawnDetails() {
+    //     spawnMap.clear();
+
+    //     // 0 - 1800 frames (~0-30s): Easy, frequent power-ups
+    //     for (int i = 100; i < 1800; i += 60) {
+    //         spawnMap.put(i, new SpawnDetails("Alien0", 100 + (i % 400), 0));
+    //         if (i % 180 == 0) spawnMap.put(i + 10, new SpawnDetails("PowerUp-HealthUp", 250, 0));
+    //         if (i % 240 == 0) spawnMap.put(i + 20, new SpawnDetails("PowerUp-SpeedUp", 350, 0));
+    //     }
+
+    //     // 1800 - 5400 frames (~0.5-1.5min): More aliens, introduce Alien1
+    //     for (int i = 1800; i < 5400; i += 40) {
+    //         spawnMap.put(i, new SpawnDetails("Alien0", 100 + (i % 500), 0));
+    //         spawnMap.put(i + 20, new SpawnDetails("Alien1", 200 + (i % 300), 0));
+    //         if (i % 400 == 0) spawnMap.put(i + 30, new SpawnDetails("PowerUp-DamageUp", 400, 0));
+    //     }
+
+    //     // 5400 - 9000 frames (~1.5-2.5min): Mix, more Alien1, some Alien2, less power-ups
+    //     for (int i = 5400; i < 9000; i += 30) {
+    //         spawnMap.put(i, new SpawnDetails("Alien1", 150 + (i % 400), 0));
+    //         if (i % 120 == 0) spawnMap.put(i + 10, new SpawnDetails("Alien2", 300 + (i % 200), 0));
+    //         if (i % 600 == 0) spawnMap.put(i + 20, new SpawnDetails("PowerUp-ShotSizeUp", 350, 0));
+    //     }
+
+    //     // 9000 - 13500 frames (~2.5-3.75min): Harder, frequent Alien2, rocket mode, mini-boss
+    //     for (int i = 9000; i < 13500; i += 25) {
+    //         spawnMap.put(i, new SpawnDetails("Alien2", 200 + (i % 500), 0));
+    //         if (i % 250 == 0) spawnMap.put(i + 10, new SpawnDetails("RocketMode", 0, 0));
+    //         if (i % 500 == 0) spawnMap.put(i + 20, new SpawnDetails("PowerUp-GunCountUp", 400, 0));
+    //     }
+    //     spawnMap.put(12000, new SpawnDetails("Boss1", BOARD_WIDTH / 2, -100));
+    //     spawnMap.put(12010, new SpawnDetails("PowerUp-HealthUp", BOARD_WIDTH / 2, 0));
+
+    //     // 13500 - 18000 frames (~3.75-5min): Final challenge, dense Alien2, bosses, rare power-ups
+    //     for (int i = 13500; i < 18000; i += 15) {
+    //         spawnMap.put(i, new SpawnDetails("Alien2", 200 + (i % 400), 0));
+    //         if (i % 900 == 0) spawnMap.put(i + 10, new SpawnDetails("Boss1", BOARD_WIDTH / 2, -100));
+    //         if (i % 1200 == 0) spawnMap.put(i + 20, new SpawnDetails("PowerUp-DamageUp", BOARD_WIDTH / 2 + 100, 0));
+    //     }
+    //     spawnMap.put(17900, new SpawnDetails("Boss1", BOARD_WIDTH / 2, -100));
+    //     spawnMap.put(17910, new SpawnDetails("PowerUp-HealthUp", BOARD_WIDTH / 2, 0));
+    // }
 
     private void loadSpawnDetails() {
         // TODO load this from a file
@@ -188,6 +235,7 @@ public class Scene1 extends JPanel {
         explosions = new ArrayList<>();
         shots = new ArrayList<>();
         rockets = new ArrayList<>();
+        lazers = new ArrayList<>();
 
         // for (int i = 0; i < 4; i++) {
         // for (int j = 0; j < 6; j++) {
@@ -410,6 +458,20 @@ public class Scene1 extends JPanel {
                 if (boss.getisAlive()) {
                     drawBossHealthBar(g, boss, boss.getShielded());
                 }
+
+                if (boss.getClipNoPowerMode() == 11 && boss.powerMode1Right == 1) {
+                    boss1Rocket1Right(boss);
+                    boss.powerMode1Right--;
+                } else if (boss.getClipNoPowerMode() == 13 && boss.powerMode2Right == 1) {
+                    boss1Rocket2Right(boss);
+                    boss.powerMode2Right--;
+                } else if (boss.getClipNoPowerMode() == 26 && boss.powerMode1Left == 1) {
+                    boss1Rocket1Left(boss);
+                    boss.powerMode1Left--;
+                } else if (boss.getClipNoPowerMode() == 28 && boss.powerMode2Left == 1) {
+                    boss1Rocket2Left(boss);
+                    boss.powerMode2Left--;
+                }
             }
 
             if (boss.isDying()) {
@@ -449,7 +511,7 @@ public class Scene1 extends JPanel {
             g.drawString("Player Action# " + player.getAction(), 550, 10);
 
             //making lazer
-            // g.drawImage(player.getLazerRay(), 300, 400, l this);
+            // g.drawImage(player.getLazerRay(), player.getX(), player.getY(), 30, -700, this);
         }
 
         if (player.isDying()) {
@@ -489,6 +551,15 @@ public class Scene1 extends JPanel {
         }
     }
 
+    private void drawLazer(Graphics g) {
+        for (LazerRay lazer : lazers) {
+            if (lazer.isVisible()) {
+                lazer.act(); // Update the lazer ray animation
+                g.drawImage(lazer.getImage(), lazer.getX(), lazer.getY(), 30, 700, this);
+            }
+        }
+    }
+
     private void drawBombing(Graphics g) {
 
         for (Enemy e : enemies) {
@@ -511,6 +582,7 @@ public class Scene1 extends JPanel {
                 // int h = img.getHeight(null);
                 // int rocketCenterX = rocketX + w / 2;
                 // int rocketCenterY = rocketY + h / 2;
+                rocket.act();
 
                 int w = 10;
                 int h = 25;
@@ -598,6 +670,7 @@ public class Scene1 extends JPanel {
             drawRockets(g);
             drawHealthBar(g);
             drawPowerBar(g);
+            drawLazer(g);
 
         } else {
 
@@ -670,6 +743,13 @@ public class Scene1 extends JPanel {
         }
     }
 
+    private void activeLazers() {
+        for (int i = 1; i < 600; i = i + 100) {
+            lazers.add(new LazerRay(i, -10));
+        }
+        lazerActivatedTime = System.currentTimeMillis();
+    }
+
     private void update() {
 
         // Check enemy spawn
@@ -714,11 +794,11 @@ public class Scene1 extends JPanel {
             }
         }
 
-        if (deaths == NUMBER_OF_ALIENS_TO_DESTROY) {
-            inGame = false;
-            timer.stop();
-            message = "Game won!";
-        }
+        // if (deaths == NUMBER_OF_ALIENS_TO_DESTROY) {
+        //     inGame = false;
+        //     timer.stop();
+        //     message = "Game won!";
+        // }
 
         // player
         player.act();
@@ -765,11 +845,15 @@ public class Scene1 extends JPanel {
                             && shotY >= (enemyY)
                             && shotY <= (enemyY + ALIEN_HEIGHT)) {
 
-                        shot.die();
-                        shotsToRemove.add(shot);
+                        if (shot.getDamage() - enemy.getHealth() > 0) {
+                            shot.setDamage(shot.getDamage() - enemy.getHealth());
+                        } else {
+                            shot.die();
+                            shotsToRemove.add(shot);
+                        }
 
-                        if (enemy.getHealth() - shotDamage > 0) {
-                            enemy.setHealth(enemy.getHealth() - shotDamage);
+                        if (enemy.getHealth() - shot.getDamage() > 0) {
+                            enemy.setHealth(enemy.getHealth() - shot.getDamage());
                             explosions.add(new Explosion(enemyX, enemyY, false));
                         } else {
                             // var ii = new ImageIcon(IMG_EXPLOSION);
@@ -792,8 +876,6 @@ public class Scene1 extends JPanel {
                                 }
                             }
                             deaths++;
-                            shot.die();
-                            shotsToRemove.add(shot);
                         }
                     }
                 }
@@ -818,6 +900,10 @@ public class Scene1 extends JPanel {
                                 if (boss.getHealth() < 10 && !boss.getShielded()) {
                                     boss.setShieldHealth(boss.getMaxShieldHealth());
                                     boss.setShielded(true);
+                                }
+                                if (boss.getPowerModeCount() > 0) {
+                                    boss.setPowerModeCount(boss.getPowerModeCount() - 1);
+                                    boss.setisPowerMode(true);
                                 }
                                 explosions.add(new Explosion(enemyX, enemyY, false));
                             } else {
@@ -846,6 +932,7 @@ public class Scene1 extends JPanel {
                     }
                 }
 
+                // Function for collision detection between shot and rockets
                 List<Rocket> rocketsToRemove = new ArrayList<>();
                 for (Rocket rocket : rockets) {
                     // Collision detection: shot and enemy
@@ -886,7 +973,7 @@ public class Scene1 extends JPanel {
         }
         shots.removeAll(shotsToRemove);
 
-        // Rocket
+        // Rocket collision detection & movement
         List<Rocket> rocketsToRemove = new ArrayList<>();
         for (Rocket rocket : rockets) {
             if (rocket.isVisible()) {
@@ -915,34 +1002,49 @@ public class Scene1 extends JPanel {
                     }
                 }
 
-                // Calculate direction vector
-                double dx = playerX - rocketX;
-                double dy = playerY - rocketY;
-                double distance = Math.sqrt(dx * dx + dy * dy);
-
-                // Set rocket speed (pixels per frame)
-                double speed = rocketSpeed;
-                // Normalize direction and update rocket position
-                if (rocketY > playerY) {
-                    rocket.tracking = false;
-                }
-
-                if (distance != 0 & rocket.tracking) {
-                    double moveDx = speed * dx / distance;
-                    double moveDy = speed * dy / distance;
-                    rocket.lastDx = moveDx;
-                    rocket.lastDy = moveDy;
-                    rocketX += (int) Math.round(moveDx);
-                    rocketY += (int) Math.round(moveDy);
-                    rocket.setX(rocketX);
-                    rocket.setY(rocketY);
-                } else {
-                    // Move in the last direction (straight line)
+                if (!rocket.tracking && rocket.isSpeeding) {
+                    // Move left for straightFrames frames
                     rocketX += (int) Math.round(rocket.lastDx);
                     rocketY += (int) Math.round(rocket.lastDy);
                     rocket.setX(rocketX);
                     rocket.setY(rocketY);
+                    rocket.framesMoved++;
+                    if (rocket.framesMoved >= rocket.straightFrames) {
+                        rocket.tracking = true;
+                        rocket.isSpeeding = false;
+                    }
+                } 
+                else if (!rocket.isSpeeding) {
+                    // Calculate direction vector
+                    double dx = playerX - rocketX;
+                    double dy = playerY - rocketY;
+                    double distance = Math.sqrt(dx * dx + dy * dy);
+
+                    // Set rocket speed (pixels per frame)
+                    double speed = rocketSpeed;
+                    // Normalize direction and update rocket position
+                    if (rocketY > playerY) {
+                        rocket.tracking = false;
+                    }
+
+                    if (distance != 0 & rocket.tracking) {
+                        double moveDx = speed * dx / distance;
+                        double moveDy = speed * dy / distance;
+                        rocket.lastDx = moveDx;
+                        rocket.lastDy = moveDy;
+                        rocketX += (int) Math.round(moveDx);
+                        rocketY += (int) Math.round(moveDy);
+                        rocket.setX(rocketX);
+                        rocket.setY(rocketY);
+                    } else {
+                        // Move in the last direction (straight line)
+                        rocketX += (int) Math.round(rocket.lastDx);
+                        rocketY += (int) Math.round(rocket.lastDy);
+                        rocket.setX(rocketX);
+                        rocket.setY(rocketY);
+                    }
                 }
+
                 // Destroy rocket if it goes out of bounds
                 if (rocketY >= GROUND - BOMB_HEIGHT || rocketX < 0 || rocketX > BOARD_WIDTH) {
                     rocket.setDestroyed(true);
@@ -1045,18 +1147,81 @@ public class Scene1 extends JPanel {
             }
         }
 
-        chance = randomizer.nextInt(50);
-        for (EnemyBoss boss : bosses) {
+        // chance = randomizer.nextInt(50);
+        // for (EnemyBoss boss : bosses) {
 
-            // Rocket
-            if (chance == CHANCE) {
-                rockets.add(new Rocket(boss.getX(), boss.getY()));
+        //     // Rocket
+        //     if (chance == CHANCE) {
+        //         rockets.add(new Rocket(boss.getX(), boss.getY()));
 
-                System.out.println("Rocket!!!!!");
+        //         System.out.println("Rocket!!!!!");
+        //     }
+        // }
+
+        if (spacePressed) fireShot();
+
+        for (LazerRay lazer : lazers) {
+            if (lazer.isVisible()) {
+                for (Enemy enemy : enemies) {
+                    if (enemy.isVisible() &&
+                        lazer.getX() >= enemy.getX() &&
+                        lazer.getX() <= enemy.getX() + enemy.getWidth() &&
+                        lazer.getY() <= enemy.getY() + enemy.getHeight()) {
+                        enemy.setDying(true);
+                        explosions.add(new Explosion(enemy.getX(), enemy.getY(), true));
+                    }
+                }
+                for (EnemyBoss boss : bosses) {
+                    if (boss.isVisible() &&
+                        lazer.getX() >= boss.getX() &&
+                        lazer.getX() <= boss.getX() + boss.getWidth() &&
+                        lazer.getY() <= boss.getY() + boss.getHeight()) {
+                        boss.setisAlive(false);
+                        explosions.add(new Explosion(boss.getX(), boss.getY(), true));
+                    }
+                }
             }
         }
 
-        if (spacePressed) fireShot();
+        // Destroy lazer rays after 3 seconds
+        if (!lazers.isEmpty() && lazerActivatedTime > 0) {
+            if (System.currentTimeMillis() - lazerActivatedTime >= 2000) {
+                lazers.clear();
+                lazerActivatedTime = 0;
+            }
+        }
+    }
+
+    private void boss1Rocket1Left(EnemyBoss boss) 
+    {
+        rockets.add(new Rocket(boss.getX() + 40, boss.getY() + 130, true, -rocketSpeed, 0, 15));
+        rockets.add(new Rocket(boss.getX() + 40, boss.getY() + 132, true, -rocketSpeed, 0, 20));
+        rockets.add(new Rocket(boss.getX() + 40, boss.getY() + 134, true, -rocketSpeed, 0, 25));
+        rockets.add(new Rocket(boss.getX() + 40, boss.getY() + 136, true, -rocketSpeed, 0, 30));
+    }
+
+    private void boss1Rocket2Left(EnemyBoss boss) 
+    {
+        rockets.add(new Rocket(boss.getX() + 40, boss.getY() + 100, true, -rocketSpeed, 0, 15));
+        rockets.add(new Rocket(boss.getX() + 40, boss.getY() + 102, true, -rocketSpeed, 0, 20));
+        rockets.add(new Rocket(boss.getX() + 40, boss.getY() + 104, true, -rocketSpeed, 0, 25));
+        rockets.add(new Rocket(boss.getX() + 40, boss.getY() + 106, true, -rocketSpeed, 0, 30));
+    }
+
+    private void boss1Rocket1Right(EnemyBoss boss) 
+    {
+        rockets.add(new Rocket(boss.getX() + 80, boss.getY() + 130, true, rocketSpeed, 0, 15));
+        rockets.add(new Rocket(boss.getX() + 80, boss.getY() + 132, true, rocketSpeed, 0, 20));
+        rockets.add(new Rocket(boss.getX() + 80, boss.getY() + 134, true, rocketSpeed, 0, 25));
+        rockets.add(new Rocket(boss.getX() + 80, boss.getY() + 136, true, rocketSpeed, 0, 30));
+    }
+
+    private void boss1Rocket2Right(EnemyBoss boss) 
+    {
+        rockets.add(new Rocket(boss.getX() + 80, boss.getY() + 100, true, rocketSpeed, 0, 15));
+        rockets.add(new Rocket(boss.getX() + 80, boss.getY() + 102, true, rocketSpeed, 0, 20));
+        rockets.add(new Rocket(boss.getX() + 80, boss.getY() + 104, true, rocketSpeed, 0, 25));
+        rockets.add(new Rocket(boss.getX() + 80, boss.getY() + 106, true, rocketSpeed, 0, 30));
     }
 
     private void doGameCycle() {
@@ -1094,6 +1259,13 @@ public class Scene1 extends JPanel {
 
             if (key == KeyEvent.VK_SPACE && inGame) {
                 spacePressed = true;
+            }
+
+            if (key == KeyEvent.VK_C) {
+                if (player.getPower() == player.getMaxPower()) {
+                    player.setPower(0);
+                    activeLazers();
+                } 
             }
 
         }
