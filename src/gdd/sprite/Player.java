@@ -16,6 +16,8 @@ public class Player extends Sprite {
     private int currentSpeed = 2;
     private Image lazerRay;
     private int lazerClipNo = 0;
+    private int destoryClipNo = 0;
+    private boolean isAlive = true;
 
     private int frame = 0;
     private int lazerFrame = 0;
@@ -44,7 +46,7 @@ public class Player extends Sprite {
 
     private void initPlayer() {
 
-        setHealth(10);
+        setHealth(1);
         setMaxHealth(10);
         setPower(0);
         setMaxPower(10);
@@ -54,6 +56,9 @@ public class Player extends Sprite {
 
         var iiLazer = new ImageIcon(IMG_LASER_RAY);
         setLazerRay(iiLazer.getImage());
+
+        var iiDestruction = new ImageIcon(IMG_PLAYER_DESTRUCTION);
+        setDestroy(iiDestruction.getImage());
 
         setX(START_X);
         setY(START_Y);
@@ -89,8 +94,19 @@ public class Player extends Sprite {
 
     @Override
     public Image getImage() {
-        Rectangle bound = player_clip.clips[clipNo];
-        BufferedImage bImage = toBufferedImage(image);
+
+        if (isAlive) {
+            Rectangle bound = player_clip.clips[clipNo];
+            BufferedImage bImage = toBufferedImage(image);
+            return bImage.getSubimage(bound.x, bound.y, bound.width, bound.height);
+        } else {
+            return getDestory();
+        }
+    }
+
+    public Image getDestory() {
+        Rectangle bound = player_clip.destroyClips[destoryClipNo];
+        BufferedImage bImage = toBufferedImage(destroy);
         return bImage.getSubimage(bound.x, bound.y, bound.width, bound.height);
     }
 
@@ -109,6 +125,14 @@ public class Player extends Sprite {
     public void setInvincible(int frames) {
         this.invincible = true;
         this.invincibleFrames = frames;
+    }
+
+    public void setIsAlive(boolean isAlive) {
+        this.isAlive = isAlive;
+    }
+
+    public boolean getIsAlive() {
+        return isAlive;
     }
 
     public String getAction() {
@@ -151,6 +175,15 @@ public class Player extends Sprite {
 
         frame++;
         lazerFrame++;
+
+        if (frame > 5 && !isAlive) {
+            destoryClipNo++;
+            if (destoryClipNo > 4) {
+                destoryClipNo = 4; // Limit to the last frame of destruction
+                setDying(true);
+            }
+            frame = 0;
+        }
 
         if (lazerFrame > 4) {
             lazerClipNo++;

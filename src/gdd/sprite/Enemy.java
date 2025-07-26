@@ -1,20 +1,48 @@
 package gdd.sprite;
 
 import static gdd.Global.*;
-import java.awt.Image;
-import java.awt.Rectangle;
 import javax.swing.ImageIcon;
-
-import gdd.image_clips.enemy_cilp;
-import java.awt.image.BufferedImage;
 
 public class Enemy extends Sprite {
 
     private Bomb bomb;
+    protected boolean isAlive = true;
+
+    public Enemy(int x, int y, int health, String image, String engine, String destruction) {
+
+        initEnemy(x, y, health, image, engine, destruction);
+    }
 
     public Enemy(int x, int y, int health) {
 
         initEnemy(x, y, health);
+    }
+
+    private void initEnemy(int x, int y, int health, String image, String engine, String destruction) {
+
+        this.health = health;
+        this.x = x;
+        this.y = y;
+
+        bomb = new Bomb(x, y);
+
+        var ii = new ImageIcon(image);
+        // Scale the image to use the global scaling factor
+        var scaledImage = ii.getImage().getScaledInstance((int) (ii.getIconWidth() * 1),
+                (int) (ii.getIconHeight() * 1),
+                java.awt.Image.SCALE_SMOOTH);
+        setImage(scaledImage);
+
+        // For Engines
+        var iiEngine = new ImageIcon(engine);
+        setEngine(iiEngine.getImage());
+
+        // For Destroy
+        var iiDestroy = new ImageIcon(destruction);
+        setDestroy(iiDestroy.getImage());
+
+        setX(x);
+        setY(y);
     }
 
     private void initEnemy(int x, int y, int health) {
@@ -47,6 +75,16 @@ public class Enemy extends Sprite {
     public Bomb getBomb() {
 
         return bomb;
+    }
+
+    public void setIsAlive(boolean isAlive) {
+
+        this.isAlive = isAlive;
+    }
+
+    public boolean getIsAlive() {
+
+        return isAlive;
     }
 
     @Override

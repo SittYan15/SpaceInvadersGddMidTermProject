@@ -38,4 +38,12 @@ public class player_clip {
         new Rectangle(40, 0, 20, 38),
     };
 
+    public static final Rectangle[] destroyClips = new Rectangle[] {
+        new Rectangle(256, 0, 64, 64), // 0 
+        new Rectangle(320, 0, 64, 64), // 1 
+        new Rectangle(384, 0, 64, 64), // 2 
+        new Rectangle(448, 0, 64, 64), // 3 
+        new Rectangle(512, 0, 64, 64), // 4
+    };
+
 }

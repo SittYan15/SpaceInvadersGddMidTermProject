@@ -8,12 +8,19 @@ import java.awt.image.BufferedImage;
 public class Boss1 extends EnemyBoss {
 
     private int frame = 0;
+    private boolean intro = true;
+    private double angle = 0;           // Current angle for circular motion
+    private final int radiusX = 200;    // Horizontal radius of the circle
+    private final int radiusY = 50;     // Vertical radius for y oscillation
+    private final int centerY = 130;    // Center vertical position
+    private final int centerX = BOARD_WIDTH / 2; // Center horizontally
+
 
     public int clipNoShield = 0;
     public int clipNoEngine = 0;
     public int clipNoDestroy = 0;
     public int clipNoPowerMode = 0;
-    
+
     private final Rectangle[] clips_shield = new Rectangle[]{
         new Rectangle(0, 0, 110, 80), // 0 
         new Rectangle(128, 0, 110, 80), // 1 
@@ -132,8 +139,21 @@ public class Boss1 extends EnemyBoss {
         }
         frame++;
 
-        if (!(this.y > 130)) {
-            this.y = this.y + 2;
+        if (intro) {
+            this.y += 2;
+            if (this.y > centerY) {
+                intro = false;
+                // Calculate initial angle based on current x position for smooth transition
+                angle = Math.acos((this.x - centerX) / (double)radiusX);
+                if (this.x < centerX) angle = 2 * Math.PI - angle; // handle left side
+            }
+        } else if (isAlive) {
+            // Elliptical movement: x in [-200, +200] from center, y in [-50, +50] from centerY
+            angle += 0.008; // Speed of rotation (adjust as needed)
+            if (angle > 2 * Math.PI) angle -= 2 * Math.PI;
+
+            this.x = centerX + (int)(radiusX * Math.cos(angle));
+            this.y = centerY + (int)(radiusY * Math.sin(angle)); // y oscillates from centerY-50 to centerY+50
         }
     }
 

@@ -24,6 +24,9 @@ abstract public class Sprite {
     protected int invincibleFrames;
     protected int visibleFrames = 10;
 
+    protected int height;
+    protected int width;
+
     protected int x;
     protected int y;
     protected int dx;
@@ -152,6 +155,8 @@ abstract public class Sprite {
     public int getWidth() {
         return image.getWidth(null);
     }
+
+    
 
     public void setDying(boolean dying) {
         this.dying = dying;

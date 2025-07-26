@@ -41,6 +41,28 @@ public class AudioPlayer {
         clip.loop(Clip.LOOP_CONTINUOUSLY);
     }
 
+    // constructor to initialize streams and clip
+    public AudioPlayer(String filePath, boolean loop)
+            throws UnsupportedAudioFileException,
+            IOException, LineUnavailableException
+    {
+        // create AudioInputStream object
+        audioInputStream =
+                AudioSystem.getAudioInputStream(new File(filePath).getAbsoluteFile());
+
+        // create clip reference
+        clip = AudioSystem.getClip();
+
+        // open audioInputStream to the clip
+        clip.open(audioInputStream);
+
+        if (loop) {
+            clip.loop(Clip.LOOP_CONTINUOUSLY);
+        } else {
+            clip.start();
+        }
+    }
+
     public static void main(String[] args) {
         try {
             String filePath = "src/audio/title.wav";

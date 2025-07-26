@@ -3,11 +3,8 @@ package gdd.scene;
 import gdd.AudioPlayer;
 import gdd.Game;
 import static gdd.Global.*;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.Toolkit;
+
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -17,7 +14,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
-public class TitleScene extends JPanel {
+public class GameOverScene extends JPanel {
 
     private int frame = 0;
     private Image image;
@@ -27,7 +24,7 @@ public class TitleScene extends JPanel {
     private Game game;
     private List<int[]> scores;
 
-    public TitleScene(Game game) {
+    public GameOverScene(Game game) {
         this.game = game;
         // initBoard();
         // initTitle();
@@ -41,6 +38,7 @@ public class TitleScene extends JPanel {
     public void start() {
         addKeyListener(new TAdapter());
         setFocusable(true);
+        requestFocusInWindow();
         setBackground(Color.black);
 
         timer = new Timer(1000 / 60, new GameCycle());
@@ -71,13 +69,14 @@ public class TitleScene extends JPanel {
     }
 
     private void initAudio() {
-        try {
-            String filePath = SOUND_BG_TITLE;
-            audioPlayer = new AudioPlayer(filePath);
-            audioPlayer.play();
-        } catch (Exception e) {
-            System.err.println("Error with playing sound.");
-        }
+        // try {
+        //     String filePath = "src/audio/title.wav";
+        //     audioPlayer = new AudioPlayer(filePath);
+
+        //     audioPlayer.play();
+        // } catch (Exception e) {
+        //     System.err.println("Error with playing sound.");
+        // }
 
     }
 
@@ -91,9 +90,20 @@ public class TitleScene extends JPanel {
     private void doDrawing(Graphics g) {
 
         g.setColor(Color.black);
-        g.fillRect(0, 0, d.width, d.height);
+        g.fillRect(0, 0, BOARD_WIDTH, BOARD_HEIGHT);
 
-        g.drawImage(image, 0, -80, d.width, d.height, this);
+        g.setColor(new Color(0, 32, 48));
+        g.fillRect(50, BOARD_WIDTH / 2 - 30, BOARD_WIDTH - 100, 50);
+        g.setColor(Color.white);
+        g.drawRect(50, BOARD_WIDTH / 2 - 30, BOARD_WIDTH - 100, 50);
+
+        var small = new Font("Helvetica", Font.BOLD, 14);
+        var fontMetrics = this.getFontMetrics(small);
+
+        g.setColor(Color.white);
+        g.setFont(small);
+        g.drawString("Game Over", (BOARD_WIDTH - fontMetrics.stringWidth("Game Over")) / 2,
+                BOARD_WIDTH / 2);
 
         if (frame % 60 < 30) {
             g.setColor(Color.red);
@@ -102,7 +112,7 @@ public class TitleScene extends JPanel {
         }
 
         g.setFont(g.getFont().deriveFont(32f));
-        String text = "Press SPACE to Start";
+        String text = "Press SPACE to TryAgain";
         int stringWidth = g.getFontMetrics().stringWidth(text);
         int x = (d.width - stringWidth) / 2;
         // int stringHeight = g.getFontMetrics().getAscent();
@@ -156,7 +166,7 @@ public class TitleScene extends JPanel {
             int key = e.getKeyCode();
             if (key == KeyEvent.VK_SPACE) {
                 // Load the next scene
-                game.loadScene1(0);
+                game.loadScene1(1);
             }
 
         }

@@ -8,12 +8,22 @@ public class Shot extends Sprite {
     private static final int H_SPACE = -1;
     private static final int V_SPACE = 38;
     private int damage;
+    private boolean isSided = false;
+    private int isLeft = 0;
 
     public Shot() {
     }
 
     public Shot(int x, int y) {
 
+        damage = shotDamage; // Initialize damage with the global shot damage
+        initShot(x, y);
+    }
+
+    public Shot(int x, int y, boolean isSided, int isLeft) {
+
+        this.isSided = isSided;
+        this.isLeft = isLeft;
         damage = shotDamage; // Initialize damage with the global shot damage
         initShot(x, y);
     }
@@ -38,6 +48,14 @@ public class Shot extends Sprite {
 
     public int getDamage() {
         return damage;
+    }
+
+    public boolean isSided() {
+        return isSided;
+    }
+
+    public int isLeft() {
+        return isLeft;
     }
 
     @Override
