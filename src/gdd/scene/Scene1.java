@@ -13,6 +13,7 @@ import gdd.powerup.SpeedUp;
 import gdd.sprite.Alien0;
 import gdd.sprite.Alien1;
 import gdd.sprite.Alien2;
+import gdd.sprite.Bomb;
 import gdd.sprite.Boss1;
 import gdd.sprite.Enemy;
 import gdd.sprite.EnemyBoss;
@@ -47,7 +48,10 @@ import javax.swing.Timer;
 public class Scene1 extends JPanel {
 
     private int frame = 0;
+    private int winFrame = 0;
     private List<PowerUp> powerups;
+
+    private boolean isIntro = true;
 
     private List<Enemy> enemies;
     private List<EnemyBoss> bosses;
@@ -55,6 +59,7 @@ public class Scene1 extends JPanel {
     private List<Explosion> explosions;
     private List<Shot> shots;
     private List<Rocket> rockets;
+    private List<Bomb> bombs;
     private List<LazerRay> lazers;
     private Player player;
     // private Shot shot;
@@ -67,6 +72,8 @@ public class Scene1 extends JPanel {
     private int direction = -1;
     private int deaths = 0;
 
+    private Color winColor = Color.WHITE;
+    private int winColorFrame = 0;
     private boolean inGame = true;
     private String message = "Game Over";
 
@@ -110,6 +117,7 @@ public class Scene1 extends JPanel {
 
     private HashMap<Integer, SpawnDetails> spawnMap = new HashMap<>();
     private AudioPlayer audioPlayer;
+    private AudioPlayer audioPlayerWin;
     private AudioPlayer audioPlayerEffect;
     private int lastRowToShow;
     private int firstRowToShow;
@@ -131,74 +139,93 @@ public class Scene1 extends JPanel {
         }
     }
 
-    // private void loadSpawnDetails() {
-    //     spawnMap.clear();
-    //     spawnMap.put(21, new SpawnDetails("Alien1", 250, 0));
-    //     // Easy: Alien0, frequent power-ups
-    //     for (int i = 100; i < 1800; i += 60) {
-    //         spawnMap.put(i, new SpawnDetails("Alien0", 100 + (i % 400), 0));
-    //         if (i % 180 == 0) spawnMap.put(i + 10, new SpawnDetails("PowerUp-HealthUp", 250, 0));
-    //         if (i % 240 == 0) spawnMap.put(i + 20, new SpawnDetails("PowerUp-SpeedUp", 350, 0));
-    //     }
-    //     // Medium: More Alien0, introduce Alien1, less frequent power-ups
-    //     for (int i = 1800; i < 5400; i += 40) {
-    //         spawnMap.put(i, new SpawnDetails("Alien0", 100 + (i % 500), 0));
-    //         spawnMap.put(i + 20, new SpawnDetails("Alien1", 200 + (i % 300), 0));
-    //         if (i % 400 == 0) spawnMap.put(i + 30, new SpawnDetails("PowerUp-DamageUp", 400, 0));
-    //     }
-    //     // Harder: More Alien1, some Alien2, rare power-ups
-    //     for (int i = 5400; i < 9000; i += 30) {
-    //         spawnMap.put(i, new SpawnDetails("Alien1", 150 + (i % 400), 0));
-    //         if (i % 120 == 0) spawnMap.put(i + 10, new SpawnDetails("Alien2", 300 + (i % 200), 0));
-    //         if (i % 600 == 0) spawnMap.put(i + 20, new SpawnDetails("PowerUp-ShotSizeUp", 350, 0));
-    //     }
-    //     // Difficult: Frequent Alien2, rocket mode, mini-boss, rare power-ups
-    //     for (int i = 9000; i < 13500; i += 25) {
-    //         spawnMap.put(i, new SpawnDetails("Alien2", 200 + (i % 500), 0));
-    //         if (i % 250 == 0) spawnMap.put(i + 10, new SpawnDetails("RocketMode", 0, 0));
-    //         if (i % 500 == 0) spawnMap.put(i + 20, new SpawnDetails("PowerUp-GunCountUp", 400, 0));
-    //     }
-    //     spawnMap.put(12000, new SpawnDetails("Boss1", BOARD_WIDTH / 2, -100));
-    //     spawnMap.put(12010, new SpawnDetails("PowerUp-HealthUp", BOARD_WIDTH / 2, 0));
-    //     // Final challenge: dense Alien2, bosses, very rare power-ups
-    //     for (int i = 13500; i < 18000; i += 15) {
-    //         spawnMap.put(i, new SpawnDetails("Alien2", 200 + (i % 400), 0));
-    //         if (i % 900 == 0) spawnMap.put(i + 10, new SpawnDetails("Boss1", BOARD_WIDTH / 2, -100));
-    //         if (i % 1200 == 0) spawnMap.put(i + 20, new SpawnDetails("PowerUp-DamageUp", BOARD_WIDTH / 2 + 100, 0));
-    //     }
-    //     spawnMap.put(17900, new SpawnDetails("Boss1", BOARD_WIDTH / 2, -100));
-    //     spawnMap.put(17910, new SpawnDetails("PowerUp-HealthUp", BOARD_WIDTH / 2, 0));
-    // }
     private void loadSpawnDetails() {
-        // TODO load this from a file
-        spawnMap.put(50, new SpawnDetails("PowerUp-SpeedUp", 100, 0));
-        spawnMap.put(251, new SpawnDetails("PowerUp-HealthUp", 300, 0));
-        spawnMap.put(452, new SpawnDetails("PowerUp-DamageUp", 400, 0));
-        spawnMap.put(653, new SpawnDetails("PowerUp-ShotSizeUp", 500, 0));
-        spawnMap.put(753, new SpawnDetails("PowerUp-GunCountUp", 350, 0));
+        spawnMap.clear();
 
-        spawnMap.put(30, new SpawnDetails("Boss1", 300, -100));
+        spawnMap.put(799, new SpawnDetails("IntroEnd", 0, 0));
 
-        spawnMap.put(20, new SpawnDetails("Alien0", 200, 0));
-        spawnMap.put(21, new SpawnDetails("Alien1", 250, 0));
-        spawnMap.put(23, new SpawnDetails("Alien2", 300, 0));
+        spawnMap.put(801, new SpawnDetails("PowerUp-SpeedUp", 100, 0));
 
-        spawnMap.put(400, new SpawnDetails("Alien1", 400, 0));
-        spawnMap.put(511, new SpawnDetails("Alien1", 450, 0));
-        spawnMap.put(622, new SpawnDetails("Alien1", 500, 0));
-        spawnMap.put(733, new SpawnDetails("Alien1", 550, 0));
+        // Easy: Alien0, frequent power-ups
+        for (int i = 800; i < 3000; i += 100) {
+            spawnMap.put(i, new SpawnDetails("Alien0", 100 + (i % 400), 0));
+        }
 
-        spawnMap.put(734, new SpawnDetails("Alien2", 300, 0));
+        spawnMap.put(1301, new SpawnDetails("PowerUp-SpeedUp", 100, 0));
+        spawnMap.put(1653, new SpawnDetails("PowerUp-ShotSizeUp", 500, 0));
+        spawnMap.put(1753, new SpawnDetails("PowerUp-GunCountUp", 350, 0));
 
-        spawnMap.put(810, new SpawnDetails("Alien1", 100, 0));
-        spawnMap.put(921, new SpawnDetails("Alien1", 150, 0));
-        spawnMap.put(1632, new SpawnDetails("Alien2", 200, 0));
-        spawnMap.put(1143, new SpawnDetails("Alien1", 350, 0));
-        spawnMap.put(1203, new SpawnDetails("Alien2", 350, 0));
+        // Medium: Alien0 + Alien1, moderate power-ups
+        for (int i = 3000; i < 7000; i += 80) {
+            spawnMap.put(i, new SpawnDetails("Alien0", 100 + (i % 500), 0));
+            if (i % 300 == 0) {
+                spawnMap.put(i + 10, new SpawnDetails("RocketMode", 0, 0));
+            }
+        }
+        spawnMap.put(2999, new SpawnDetails("PowerUp-HealthUp", 300, 0));
+        spawnMap.put(3251, new SpawnDetails("PowerUp-HealthUp", 300, 0));
+        spawnMap.put(3501, new SpawnDetails("PowerUp-DamageUp", 400, 0));
+        // spawnMap.put(3853, new SpawnDetails("PowerUp-GunCountUp", 350, 0));
 
-        // spawnMap.put(300, new SpawnDetails("RocketMode", 0, 0));
+        spawnMap.put(5251, new SpawnDetails("PowerUp-HealthUp", 300, 0));
+        spawnMap.put(6251, new SpawnDetails("PowerUp-HealthUp", 300, 0));
+
+        // Harder: More Alien1, some Alien2, less frequent power-ups
+        for (int i = 7000; i < 12000; i += 60) {
+            spawnMap.put(i, new SpawnDetails("Alien1", 150 + (i % 400), 0));
+            if (i % 400 == 0) {
+                spawnMap.put(i + 10, new SpawnDetails("RocketMode", 0, 0));
+            }
+        }
+
+        spawnMap.put(7501, new SpawnDetails("PowerUp-DamageUp", 400, 0));
+        spawnMap.put(7653, new SpawnDetails("PowerUp-ShotSizeUp", 500, 0));
+        spawnMap.put(8301, new SpawnDetails("PowerUp-SpeedUp", 100, 0));
+        spawnMap.put(8251, new SpawnDetails("PowerUp-HealthUp", 300, 0));
+        spawnMap.put(9853, new SpawnDetails("PowerUp-GunCountUp", 350, 0));
+
+        // Difficult: Frequent Alien2, rocket mode, rare power-ups
+        for (int i = 12000; i < 17000; i += 50) {
+            spawnMap.put(i, new SpawnDetails("Alien2", 200 + (i % 500), 0));
+        }
+
+        spawnMap.put(12251, new SpawnDetails("PowerUp-HealthUp", 300, 0));
+        spawnMap.put(13501, new SpawnDetails("PowerUp-DamageUp", 400, 0));
+        spawnMap.put(13653, new SpawnDetails("PowerUp-SpeedUp", 500, 0));
+        spawnMap.put(15251, new SpawnDetails("PowerUp-HealthUp", 300, 0));
+
+        // Final challenge: dense Alien2, very rare power-ups
+        for (int i = 17000; i < 18000; i += 40) {
+            spawnMap.put(i, new SpawnDetails("Alien2", 200 + (i % 400), 0));
+        }
+
+        spawnMap.put(15910, new SpawnDetails("PowerUp-HealthUp", BOARD_WIDTH / 2, 0));
+        spawnMap.put(18000, new SpawnDetails("Win", 0, 0));
     }
 
+    // private void loadSpawnDetails() {
+    //     // TODO load this from a file
+    //     spawnMap.put(50, new SpawnDetails("PowerUp-SpeedUp", 100, 0));
+    //     spawnMap.put(251, new SpawnDetails("PowerUp-HealthUp", 300, 0));
+    //     spawnMap.put(452, new SpawnDetails("PowerUp-DamageUp", 400, 0));
+    //     spawnMap.put(653, new SpawnDetails("PowerUp-ShotSizeUp", 500, 0));
+    //     spawnMap.put(753, new SpawnDetails("PowerUp-GunCountUp", 350, 0));
+    //     spawnMap.put(30, new SpawnDetails("Boss1", 300, -100));
+    //     spawnMap.put(20, new SpawnDetails("Alien0", 200, 0));
+    //     spawnMap.put(21, new SpawnDetails("Alien1", 250, 0));
+    //     spawnMap.put(23, new SpawnDetails("Alien2", 300, 0));
+    //     spawnMap.put(400, new SpawnDetails("Alien1", 400, 0));
+    //     spawnMap.put(511, new SpawnDetails("Alien1", 450, 0));
+    //     spawnMap.put(622, new SpawnDetails("Alien1", 500, 0));
+    //     spawnMap.put(733, new SpawnDetails("Alien1", 550, 0));
+    //     spawnMap.put(734, new SpawnDetails("Alien2", 300, 0));
+    //     spawnMap.put(810, new SpawnDetails("Alien1", 100, 0));
+    //     spawnMap.put(921, new SpawnDetails("Alien1", 150, 0));
+    //     spawnMap.put(1632, new SpawnDetails("Alien2", 200, 0));
+    //     spawnMap.put(1143, new SpawnDetails("Alien1", 350, 0));
+    //     spawnMap.put(1203, new SpawnDetails("Alien2", 350, 0));
+    //     spawnMap.put(100, new SpawnDetails("Win", 0, 0));
+    // }
     public void start() {
         addKeyListener(new TAdapter());
         setFocusable(true);
@@ -231,6 +258,7 @@ public class Scene1 extends JPanel {
         explosions = new ArrayList<>();
         shots = new ArrayList<>();
         rockets = new ArrayList<>();
+        bombs = new ArrayList<>();
         lazers = new ArrayList<>();
 
         // for (int i = 0; i < 4; i++) {
@@ -572,13 +600,9 @@ public class Scene1 extends JPanel {
 
     private void drawBombing(Graphics g) {
 
-        for (Enemy e : enemies) {
-            if (e.getLevel() == 0) {
-                continue; // Skip Alien0
-            }
-            Enemy.Bomb b = e.getBomb();
-            if (!b.isDestroyed()) {
-                g.drawImage(b.getImage(), b.getX(), b.getY(), this);
+        for (Bomb bomb : bombs) {
+            if (bomb.isVisible()) {
+                g.drawImage(bomb.getImage(), bomb.getX(), bomb.getY(), this);
             }
         }
     }
@@ -692,6 +716,14 @@ public class Scene1 extends JPanel {
             drawPowerBar(g);
             drawLazer(g);
 
+            if (isIntro) {
+                drawIntroScript(g);
+            }
+
+            if (isScene1Win) {
+                drawScene1Win(g);
+            }
+
         } else {
 
             if (timer.isRunning()) {
@@ -702,6 +734,28 @@ public class Scene1 extends JPanel {
         }
 
         Toolkit.getDefaultToolkit().sync();
+    }
+
+    private void drawIntroScript(Graphics g) {
+        // Fade-in effect based on frame
+        int alpha = Math.min(255, frame * 3); // Fade in over 85 frames (~1.5 sec)
+        Color introDanger = new Color(255, 0, 0, alpha); // Red with fade
+        Color introColor = new Color(0, 255, 255, alpha); // Cyan with fade
+
+        g.setColor(introDanger);
+        g.setFont(new Font("Orbitron", Font.BOLD, 28)); // Use a sci-fi font if available
+        g.drawString("EARTH IS UNDER THREAT!", 80, 170);
+
+        g.setColor(introColor);
+        g.setFont(new Font("Orbitron", Font.PLAIN, 20));
+        g.drawString("A hostile alien boss is protected by waves of spacecraft.", 80, 210);
+        g.drawString("Destroy enemy ships to collect power energy.", 80, 290);
+        g.drawString("Gather enough energy to activate your powerful laser weapon.", 80, 320);
+        g.drawString("Can you take down the alien boss and save Earth?", 80, 350);
+
+        g.setFont(new Font("Orbitron", Font.BOLD, 22));
+        g.setColor(new Color(255, 255, 0, alpha)); // Yellow for emphasis
+        g.drawString("Good Luck, Pilot!", 80, 400);
     }
 
     private void gameOver(Graphics g) {
@@ -721,7 +775,6 @@ public class Scene1 extends JPanel {
         int y = player.getY();
 
         long now = System.currentTimeMillis();
-        System.out.println("Shots: " + shots.size());
         if (now - lastShotTime >= shotCooldownMillis) {
             // Create a new shot and add it to the list
             switch (gunCount) {
@@ -742,7 +795,7 @@ public class Scene1 extends JPanel {
                     shots.add(shot);
                     shot = new Shot(x, y);
                     shots.add(shot);
-                    shot = new Shot(x + 10, y + 15);
+                    shot = new Shot(x + 10, y + 15, true, 1);
                     shots.add(shot);
                     lastShotTime = now;
                 }
@@ -795,7 +848,60 @@ public class Scene1 extends JPanel {
         }
     }
 
+    private void Scene1Win() {
+        try {
+            // audioPlayer.stop();
+            audioPlayer.stop();
+            // audioPlayerEffect.stop();
+            audioPlayer = new AudioPlayer(SOUND_BG_WIN, false);
+            audioPlayer.play();
+        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        isScene1Win = true;
+        playerSpeed = player.getSpeed();
+        playerHealth = player.getHealth();
+        playerPower = player.getPower();
+        kill = deaths;
+    }
+
+    private void drawScene1Win(Graphics g) {
+        g.setColor(winColor);
+        g.setFont(new Font("Helvetica", Font.BOLD, 24));
+        g.drawString("Well Done!", BOARD_WIDTH / 2 - 50, BOARD_HEIGHT / 2 - 20);
+        g.setFont(new Font("Helvetica", Font.PLAIN, 18));
+        g.drawString("The Boss is coming to you, be careful...", BOARD_WIDTH / 2 - 80, BOARD_HEIGHT / 2 + 20);
+    }
+
     private void update() {
+
+        if (isScene1Win) {
+            winFrame++;
+            winColorFrame++;
+            for (Enemy enemy : enemies) {
+                enemy.setIsAlive(false);
+            }
+            for (EnemyBoss boss : bosses) {
+                boss.setisAlive(false);
+            }
+            player.setY(player.getY() - 2);
+
+            if (winColorFrame <= 10) {
+                winColor = Color.red;
+            } else if (winColorFrame > 20) {
+                winColor = Color.white;
+                winColorFrame = 0; // Reset the frame counter for color change
+            }
+
+            if (winFrame > 350) {
+                // inGame = false;
+                timer.stop();
+                game.loadScene2();
+            }
+
+        }
 
         // Check enemy spawn
         SpawnDetails sd = spawnMap.get(frame);
@@ -830,9 +936,16 @@ public class Scene1 extends JPanel {
                     powerups.add(new MultiShotUp(sd.x, sd.y));
                 }
                 case "RocketMode" -> {
-                    for (int i = 1; i < 600; i = i + 20) {
+                    for (int i = 1; i < 600; i = i + 100) {
                         rockets.add(new Rocket(i, 0));
                     }
+                }
+                case "Win" -> {
+                    Scene1Win();
+                }
+                case "IntroEnd" -> {
+                    System.out.println("fk u");
+                    isIntro = false;
                 }
                 default ->
                     System.out.println("Unknown enemy type: " + sd.type);
@@ -899,6 +1012,10 @@ public class Scene1 extends JPanel {
                             && shotY >= (enemyY + 15)
                             && shotY <= (enemyY + ALIEN_HEIGHT + 20)) {
 
+                        if (enemy.getIsHit()) {
+                            continue;
+                        }
+
                         if (shot.getDamage() - enemy.getHealth() > 0) {
                             shot.setDamage(shot.getDamage() - enemy.getHealth());
                         } else {
@@ -925,6 +1042,7 @@ public class Scene1 extends JPanel {
                             // enemy.setImage(ii.getImage());
                             explosions.add(new Explosion(enemyX + 20, enemyY + 20, true));
                             enemy.setIsAlive(false);
+                            enemy.setIsHit(true);
                             // enemy.setDying(true);
                             if (enemy.getLevel() == 0) {
                                 if (player.getPower() + 0.3 > player.getMaxPower()) {
@@ -1101,6 +1219,66 @@ public class Scene1 extends JPanel {
         }
         shots.removeAll(shotsToRemove);
 
+        // Bomb
+        List<Bomb> bombsToRemove = new ArrayList<>();
+
+        for (Bomb bomb : bombs) {
+            int bombX = bomb.getX();
+            int bombY = bomb.getY();
+            int playerX = player.getX();
+            int playerY = player.getY();
+
+            if (player.isVisible() && !bomb.isDestroyed() && !player.isInvincible()
+                    && bombX >= (playerX - PLAYER_WIDTH)
+                    && bombX <= (playerX + PLAYER_WIDTH)
+                    && bombY >= (playerY - PLAYER_HEIGHT)
+                    && bombY <= (playerY)) {
+
+                bomb.setDestroyed(true);
+                bombsToRemove.add(bomb);
+                int health = player.getHealth();
+                if (health > 0) {
+                    health--;
+                    player.setHealth(health);
+                    player.setInvincible(30);
+                    try {
+                        audioPlayerEffect = new AudioPlayer(SOUND_EFFECT_PLAYER_HIT1, false);
+                        audioPlayerEffect.play();
+                    } catch (UnsupportedAudioFileException ex) {
+                        throw new RuntimeException(ex);
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    } catch (LineUnavailableException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                } else {
+                    var ii = new ImageIcon(IMG_EXPLOSION);
+                    player.setImage(ii.getImage());
+                    // player.setDying(true);
+                    try {
+                        audioPlayerEffect = new AudioPlayer(SOUND_EFFECT_PLAYER_HIT2, false);
+                        audioPlayerEffect.play();
+                    } catch (UnsupportedAudioFileException ex) {
+                        throw new RuntimeException(ex);
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    } catch (LineUnavailableException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                    player.setIsAlive(false);
+                }
+            }
+
+            if (!bomb.isDestroyed()) {
+                bomb.setY(bomb.getY() + 5);
+                if (bomb.getY() >= GROUND - BOMB_HEIGHT) {
+                    bomb.setDestroyed(true);
+                }
+            }
+        }
+        bombs.removeAll(bombsToRemove);
+
+
         // Rocket collision detection & movement
         List<Rocket> rocketsToRemove = new ArrayList<>();
         for (Rocket rocket : rockets) {
@@ -1229,6 +1407,7 @@ public class Scene1 extends JPanel {
         int offsetX = 0;
         int offsetY = 0;
         int chance = 0;
+        int chance2 = 0;
         for (Enemy enemy : enemies) {
             switch (enemy.getLevel()) {
                 case 0 -> {
@@ -1237,7 +1416,8 @@ public class Scene1 extends JPanel {
                 case 1 -> {
                     offsetX = 31;
                     offsetY = 34;
-                    chance = randomizer.nextInt(15);
+                    chance = 10;
+                    chance2 = randomizer.nextInt(20);
                 }
                 case 2 -> {
                     if (randomizer.nextBoolean()) {
@@ -1247,20 +1427,22 @@ public class Scene1 extends JPanel {
                         offsetX = 40;
                         offsetY = 34;
                     }
-                    chance = randomizer.nextInt(10);
+                    chance = 10;
+                    chance2 = randomizer.nextInt(15);
                 }
                 default -> {
                     System.out.println("Unknown enemy level: " + enemy.getLevel());
                 }
             }
 
-            Enemy.Bomb bomb = enemy.getBomb();
+            Bomb bomb = new Bomb(0, 0);
 
-            if (chance == CHANCE && enemy.isVisible() && bomb.isDestroyed()) {
+            if (frame % chance == 0 && chance2 == CHANCE && enemy.isVisible() && bomb.isDestroyed()) {
 
                 bomb.setDestroyed(false);
                 bomb.setX(enemy.getX() + offsetX);
                 bomb.setY(enemy.getY() + offsetY);
+                bombs.add(bomb);
                 try {
                     audioPlayerEffect = new AudioPlayer(SOUND_EFFECT_BOMB, false);
                     audioPlayerEffect.play();
@@ -1270,58 +1452,6 @@ public class Scene1 extends JPanel {
                     throw new RuntimeException(ex);
                 } catch (LineUnavailableException ex) {
                     throw new RuntimeException(ex);
-                }
-            }
-
-            int bombX = bomb.getX();
-            int bombY = bomb.getY();
-            int playerX = player.getX();
-            int playerY = player.getY();
-
-            if (player.isVisible() && !bomb.isDestroyed() && !player.isInvincible()
-                    && bombX >= (playerX - PLAYER_WIDTH)
-                    && bombX <= (playerX + PLAYER_WIDTH)
-                    && bombY >= (playerY - PLAYER_HEIGHT)
-                    && bombY <= (playerY)) {
-
-                bomb.setDestroyed(true);
-                int health = player.getHealth();
-                if (health > 0) {
-                    health--;
-                    player.setHealth(health);
-                    player.setInvincible(30);
-                    try {
-                        audioPlayerEffect = new AudioPlayer(SOUND_EFFECT_PLAYER_HIT1, false);
-                        audioPlayerEffect.play();
-                    } catch (UnsupportedAudioFileException ex) {
-                        throw new RuntimeException(ex);
-                    } catch (IOException ex) {
-                        throw new RuntimeException(ex);
-                    } catch (LineUnavailableException ex) {
-                        throw new RuntimeException(ex);
-                    }
-                } else {
-                    var ii = new ImageIcon(IMG_EXPLOSION);
-                    player.setImage(ii.getImage());
-                    // player.setDying(true);
-                    try {
-                        audioPlayerEffect = new AudioPlayer(SOUND_EFFECT_PLAYER_HIT2, false);
-                        audioPlayerEffect.play();
-                    } catch (UnsupportedAudioFileException ex) {
-                        throw new RuntimeException(ex);
-                    } catch (IOException ex) {
-                        throw new RuntimeException(ex);
-                    } catch (LineUnavailableException ex) {
-                        throw new RuntimeException(ex);
-                    }
-                    player.setIsAlive(false);
-                }
-            }
-
-            if (!bomb.isDestroyed()) {
-                bomb.setY(bomb.getY() + 5);
-                if (bomb.getY() >= GROUND - BOMB_HEIGHT) {
-                    bomb.setDestroyed(true);
                 }
             }
         }
@@ -1425,8 +1555,7 @@ public class Scene1 extends JPanel {
 
         @Override
         public void keyPressed(KeyEvent e) {
-            System.out.println("Scene2.keyPressed: " + e.getKeyCode());
-
+            
             player.keyPressed(e);
 
             int key = e.getKeyCode();

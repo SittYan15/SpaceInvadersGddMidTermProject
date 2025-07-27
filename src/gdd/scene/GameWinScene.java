@@ -3,7 +3,11 @@ package gdd.scene;
 import gdd.AudioPlayer;
 import gdd.Game;
 import static gdd.Global.*;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -13,7 +17,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
-public class GameOverScene extends JPanel {
+public class GameWinScene extends JPanel {
 
     private int frame = 0;
     private Image image;
@@ -23,7 +27,7 @@ public class GameOverScene extends JPanel {
     private Game game;
     private List<int[]> scores;
 
-    public GameOverScene(Game game) {
+    public GameWinScene(Game game) {
         this.game = game;
         // initBoard();
         // initTitle();
@@ -37,7 +41,6 @@ public class GameOverScene extends JPanel {
     public void start() {
         addKeyListener(new TAdapter());
         setFocusable(true);
-        requestFocusInWindow();
         setBackground(Color.black);
 
         timer = new Timer(1000 / 60, new GameCycle());
@@ -68,14 +71,13 @@ public class GameOverScene extends JPanel {
     }
 
     private void initAudio() {
-        // try {
-        //     String filePath = "src/audio/title.wav";
-        //     audioPlayer = new AudioPlayer(filePath);
-
-        //     audioPlayer.play();
-        // } catch (Exception e) {
-        //     System.err.println("Error with playing sound.");
-        // }
+        try {
+            String filePath = SOUND_BG_WIN;
+            audioPlayer = new AudioPlayer(filePath);
+            audioPlayer.play();
+        } catch (Exception e) {
+            System.err.println("Error with playing sound.");
+        }
 
     }
 
@@ -88,38 +90,32 @@ public class GameOverScene extends JPanel {
 
     private void doDrawing(Graphics g) {
 
+        // Background
         g.setColor(Color.black);
-        g.fillRect(0, 0, BOARD_WIDTH, BOARD_HEIGHT);
+        g.fillRect(0, 0, d.width, d.height);
 
-        g.setColor(new Color(0, 32, 48));
-        g.fillRect(50, BOARD_WIDTH / 2 - 30, BOARD_WIDTH - 100, 50);
-        g.setColor(Color.white);
-        g.drawRect(50, BOARD_WIDTH / 2 - 30, BOARD_WIDTH - 100, 50);
+        // Title image with slight transparency and glow effect
+        g.drawImage(image, 0, -80, d.width, d.height, this);
 
-        var small = new Font("Helvetica", Font.BOLD, 14);
-        var fontMetrics = this.getFontMetrics(small);
-
-        g.setColor(Color.white);
-        g.setFont(small);
-        g.drawString("Game Over", (BOARD_WIDTH - fontMetrics.stringWidth("Game Over")) / 2,
-                BOARD_WIDTH / 2);
-
-        if (frame % 60 < 30) {
-            g.setColor(Color.red);
-        } else {
-            g.setColor(Color.white);
-        }
-
-        g.setFont(g.getFont().deriveFont(32f));
-        String text = "Press SPACE to TryAgain";
+        // Animated "Press SPACE to Start" text (pulsing color and shadow)
+        String text = "Press SPACE to Quit";
+        g.setFont(g.getFont().deriveFont(38f));
         int stringWidth = g.getFontMetrics().stringWidth(text);
         int x = (d.width - stringWidth) / 2;
-        // int stringHeight = g.getFontMetrics().getAscent();
-        // int y = (d.height + stringHeight) / 2;
-        g.drawString(text, x, 600);
+        int y = 600;
 
+        // Shadow
+        g.setColor(new Color(0, 0, 0, 120));
+        g.drawString(text, x + 3, y + 3);
+
+        // Pulsing color
+        int pulse = (int)(128 + 127 * Math.sin(frame * 0.12));
+        g.setColor(new Color(255, pulse, pulse));
+        g.drawString(text, x, y);
+
+        // Game credits
+        g.setFont(g.getFont().deriveFont(12f));
         g.setColor(Color.gray);
-        g.setFont(g.getFont().deriveFont(10f));
         g.drawString("Game by Chayapol", 10, 650);
 
         // Best Scores box with neon border
@@ -140,6 +136,14 @@ public class GameOverScene extends JPanel {
         g.setFont(g.getFont().deriveFont(13f));
         g.setColor(Color.yellow);
         g.drawString("Sitt Yan Htun (6722114)", 15, 98);
+
+        // Motivational message
+        g.setFont(g.getFont().deriveFont(22f));
+        g.setColor(new Color(255, 255, 0));
+        g.drawString("Congratulations, Pilot!", x, 520);
+        g.setFont(g.getFont().deriveFont(16f));
+        g.setColor(new Color(0, 255, 255));
+        g.drawString("You saved Earth from the alien threat!", x, 550);
 
         Toolkit.getDefaultToolkit().sync();
     }
@@ -174,7 +178,7 @@ public class GameOverScene extends JPanel {
             int key = e.getKeyCode();
             if (key == KeyEvent.VK_SPACE) {
                 // Load the next scene
-                game.loadScene1(1);
+                game.loadTitle(1);
             }
 
         }

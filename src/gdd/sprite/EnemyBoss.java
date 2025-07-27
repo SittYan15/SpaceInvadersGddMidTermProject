@@ -12,6 +12,7 @@ public class EnemyBoss extends Sprite{
     protected boolean deathShownedFinished = false;
     protected boolean isAlive = true;
     protected boolean isPowerMode = false;
+    protected boolean isHit = false;
 
     protected int powerModeCount;
 
@@ -32,7 +33,7 @@ public class EnemyBoss extends Sprite{
         this.x = x;
         this.y = y;
         this.shieldCount = shieldCount;
-        this.shieldHealth = this.maxShieldHealth = 15;
+        this.shieldHealth = this.maxShieldHealth = 100;
         this.powerModeCount = powerModeCount;
 
         var ii = new ImageIcon(img);
@@ -134,6 +135,14 @@ public class EnemyBoss extends Sprite{
 
     public int getClipNoPowerMode() {
         return 0;
+    }
+
+    public void setIsHit(boolean isHit) {
+        this.isHit = isHit;
+    }
+
+    public boolean getIsHit() {
+        return isHit;
     }
 
     @Override

@@ -1,8 +1,10 @@
 package gdd.sprite;
 
+import static gdd.Global.GROUND;
 import static gdd.Global.IMG_ALIEN1;
 import static gdd.Global.IMG_ALIEN1_DESTRUCTION;
 import static gdd.Global.IMG_ALIEN1_ENGINES;
+import gdd.image_clips.ReadCSV;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
@@ -15,32 +17,7 @@ public class Alien1 extends Enemy {
     private int clipNoEngine = 0;
     private int clipNoDestroy = 0;
 
-    private final Rectangle[] clips_engine = new Rectangle[]{
-        new Rectangle(0, 0, 64, 64), // 0 
-        new Rectangle(64, 0, 64, 64), // 1 
-        new Rectangle(128, 0, 64, 64), // 2 
-        new Rectangle(192, 0, 64, 64), // 3 
-        new Rectangle(256, 0, 64, 64), // 4 
-        new Rectangle(320, 0, 64, 64), // 5 
-        new Rectangle(384, 0, 64, 64), // 6 
-        new Rectangle(448, 0, 64, 64), // 7 
-        new Rectangle(512, 0, 64, 64), // 8
-        new Rectangle(576, 0, 64, 64), // 9 
-    };
-
-    private final Rectangle[] clips_destroy = new Rectangle[] {
-        new Rectangle(0, 0, 64, 64), // 0 
-        new Rectangle(64, 0, 64, 64), // 1 
-        new Rectangle(128, 0, 64, 64), // 2 
-        new Rectangle(192, 0, 64, 64), // 3 
-        new Rectangle(256, 0, 64, 64), // 4 
-        new Rectangle(320, 0, 64, 64), // 5 
-        new Rectangle(384, 0, 64, 64), // 6 
-        new Rectangle(448, 0, 64, 64), // 7 
-        new Rectangle(512, 0, 64, 64), // 8
-        new Rectangle(576, 0, 64, 64), // 9 
-    };
-
+    private final Rectangle[] clips = ReadCSV.loadClipsFromCSV("src/gdd/db/enemy0_clips.csv");
 
     public Alien1(int x, int y) {
         super(x, y, 2, IMG_ALIEN1, IMG_ALIEN1_ENGINES, IMG_ALIEN1_DESTRUCTION);
@@ -62,6 +39,11 @@ public class Alien1 extends Enemy {
             clipNoDestroy = 9;
             setDying(true);
         }
+
+        if (this.y > GROUND) {
+            this.y = GROUND;
+            setDying(true);
+        }
     }
 
     @Override
@@ -81,14 +63,14 @@ public class Alien1 extends Enemy {
     }
 
     public Image getDeath() {
-        Rectangle bound = clips_destroy[clipNoDestroy];
+        Rectangle bound = clips[clipNoDestroy];
         BufferedImage bImage = toBufferedImage(destroy);
         return bImage.getSubimage(bound.x, bound.y, bound.width, bound.height);
     }
 
     @Override
     public Image getEngine() {
-        Rectangle bound = clips_engine[clipNoEngine];
+        Rectangle bound = clips[clipNoEngine];
         BufferedImage bImage = toBufferedImage(engine);
         return bImage.getSubimage(bound.x, bound.y, bound.width, bound.height);
     }

@@ -13,6 +13,7 @@ import gdd.powerup.SpeedUp;
 import gdd.sprite.Alien0;
 import gdd.sprite.Alien1;
 import gdd.sprite.Alien2;
+import gdd.sprite.Bomb;
 import gdd.sprite.Boss1;
 import gdd.sprite.Enemy;
 import gdd.sprite.EnemyBoss;
@@ -47,7 +48,12 @@ import javax.swing.Timer;
 public class Scene2 extends JPanel {
 
     private int frame = 0;
+    private int winFrame = 0;
     private List<PowerUp> powerups;
+    private int gunPos = 0;
+
+    private boolean isIntro = true;
+    private boolean showWarningBoss = false;
 
     private List<Enemy> enemies;
     private List<EnemyBoss> bosses;
@@ -55,6 +61,7 @@ public class Scene2 extends JPanel {
     private List<Explosion> explosions;
     private List<Shot> shots;
     private List<Rocket> rockets;
+    private List<Bomb> bombs;
     private List<LazerRay> lazers;
     private Player player;
     // private Shot shot;
@@ -67,6 +74,8 @@ public class Scene2 extends JPanel {
     private int direction = -1;
     private int deaths = 0;
 
+    private Color winColor = Color.WHITE;
+    private int winColorFrame = 0;
     private boolean inGame = true;
     private String message = "Game Over";
 
@@ -110,6 +119,8 @@ public class Scene2 extends JPanel {
 
     private HashMap<Integer, SpawnDetails> spawnMap = new HashMap<>();
     private AudioPlayer audioPlayer;
+    private AudioPlayer audioPlayerWin;
+    private AudioPlayer audioPlayerEffect;
     private int lastRowToShow;
     private int firstRowToShow;
 
@@ -121,56 +132,73 @@ public class Scene2 extends JPanel {
     }
 
     private void initAudio() {
-        // try {
-        //     String filePath = "src/audio/scene1.wav";
-        //     audioPlayer = new AudioPlayer(filePath);
-        //     audioPlayer.play();
-        // } catch (Exception e) {
-        //     System.err.println("Error initializing audio player: " + e.getMessage());
-        // }
+        try {
+            String filePath = SOUND_BG_SCENE1;
+            audioPlayer = new AudioPlayer(filePath);
+            audioPlayer.play();
+        } catch (Exception e) {
+            System.err.println("Error initializing audio player: " + e.getMessage());
+        }
     }
 
     private void loadSpawnDetails() {
         spawnMap.clear();
 
+        spawnMap.put(799, new SpawnDetails("IntroEnd", 0, 0));
+
+        spawnMap.put(801, new SpawnDetails("PowerUp-HealthUp", 100, 0));
+
         // Easy: Alien0, frequent power-ups
-        for (int i = 100; i < 1800; i += 60) {
-            spawnMap.put(i, new SpawnDetails("Alien0", 100 + (i % 400), 0));
-            if (i % 180 == 0) spawnMap.put(i + 10, new SpawnDetails("PowerUp-HealthUp", 250, 0));
-            if (i % 240 == 0) spawnMap.put(i + 20, new SpawnDetails("PowerUp-SpeedUp", 350, 0));
+        for (int i = 800; i < 3000; i += 100) {
+            spawnMap.put(i, new SpawnDetails("Alien1", 100 + (i % 400), 0));
+            if (i % 600 == 0) {
+                spawnMap.put(i + 10, new SpawnDetails("RocketMode", 0, 0));
+            }
         }
 
-        // Medium: More Alien0, introduce Alien1, less frequent power-ups
-        for (int i = 1800; i < 5400; i += 40) {
-            spawnMap.put(i, new SpawnDetails("Alien0", 100 + (i % 500), 0));
-            spawnMap.put(i + 20, new SpawnDetails("Alien1", 200 + (i % 300), 0));
-            if (i % 400 == 0) spawnMap.put(i + 30, new SpawnDetails("PowerUp-DamageUp", 400, 0));
+        spawnMap.put(1653, new SpawnDetails("PowerUp-ShotSizeUp", 500, 0));
+
+        // Medium: Alien0 + Alien1, moderate power-ups
+        for (int i = 3000; i < 7000; i += 80) {
+            spawnMap.put(i, new SpawnDetails("Alien2", 100 + (i % 500), 0));
+            if (i % 300 == 0) {
+                spawnMap.put(i + 10, new SpawnDetails("RocketMode", 0, 0));
+            }
+        }
+        spawnMap.put(2999, new SpawnDetails("PowerUp-HealthUp", 300, 0));
+        spawnMap.put(3251, new SpawnDetails("PowerUp-HealthUp", 300, 0));
+        spawnMap.put(3501, new SpawnDetails("PowerUp-DamageUp", 400, 0));
+
+        spawnMap.put(5251, new SpawnDetails("PowerUp-HealthUp", 300, 0));
+        spawnMap.put(6251, new SpawnDetails("PowerUp-HealthUp", 300, 0));
+
+        // Harder: More Alien1, some Alien2, less frequent power-ups
+        for (int i = 7000; i < 12000; i += 60) {
+            spawnMap.put(i, new SpawnDetails("Alien2", 150 + (i % 400), 0));
+            if (i % 400 == 0) {
+                spawnMap.put(i + 10, new SpawnDetails("RocketMode", 0, 0));
+            }
         }
 
-        // Harder: More Alien1, some Alien2, rare power-ups
-        for (int i = 5400; i < 9000; i += 30) {
-            spawnMap.put(i, new SpawnDetails("Alien1", 150 + (i % 400), 0));
-            if (i % 120 == 0) spawnMap.put(i + 10, new SpawnDetails("Alien2", 300 + (i % 200), 0));
-            if (i % 600 == 0) spawnMap.put(i + 20, new SpawnDetails("PowerUp-ShotSizeUp", 350, 0));
-        }
+        spawnMap.put(7501, new SpawnDetails("PowerUp-DamageUp", 400, 0));
+        spawnMap.put(7653, new SpawnDetails("PowerUp-ShotSizeUp", 500, 0));
+        spawnMap.put(8251, new SpawnDetails("PowerUp-HealthUp", 300, 0));
+        spawnMap.put(9853, new SpawnDetails("PowerUp-GunCountUp", 350, 0));
 
-        // Difficult: Frequent Alien2, rocket mode, mini-boss, rare power-ups
-        for (int i = 9000; i < 13500; i += 25) {
+        // Difficult: Frequent Alien2, rocket mode, rare power-ups
+        for (int i = 12000; i < 17000; i += 40) {
             spawnMap.put(i, new SpawnDetails("Alien2", 200 + (i % 500), 0));
-            if (i % 250 == 0) spawnMap.put(i + 10, new SpawnDetails("RocketMode", 0, 0));
-            if (i % 500 == 0) spawnMap.put(i + 20, new SpawnDetails("PowerUp-GunCountUp", 400, 0));
         }
-        spawnMap.put(12000, new SpawnDetails("Boss1", BOARD_WIDTH / 2, -100));
-        spawnMap.put(12010, new SpawnDetails("PowerUp-HealthUp", BOARD_WIDTH / 2, 0));
 
-        // Final challenge: dense Alien2, bosses, very rare power-ups
-        for (int i = 13500; i < 18000; i += 15) {
-            spawnMap.put(i, new SpawnDetails("Alien2", 200 + (i % 400), 0));
-            if (i % 900 == 0) spawnMap.put(i + 10, new SpawnDetails("Boss1", BOARD_WIDTH / 2, -100));
-            if (i % 1200 == 0) spawnMap.put(i + 20, new SpawnDetails("PowerUp-DamageUp", BOARD_WIDTH / 2 + 100, 0));
-        }
-        spawnMap.put(17900, new SpawnDetails("Boss1", BOARD_WIDTH / 2, -100));
-        spawnMap.put(17910, new SpawnDetails("PowerUp-HealthUp", BOARD_WIDTH / 2, 0));
+        spawnMap.put(12251, new SpawnDetails("PowerUp-HealthUp", 300, 0));
+        spawnMap.put(13501, new SpawnDetails("PowerUp-DamageUp", 400, 0));
+        spawnMap.put(15251, new SpawnDetails("PowerUp-HealthUp", 300, 0));
+
+        spawnMap.put(17200, new SpawnDetails("WarningBossShown", 0, 0));
+        spawnMap.put(17900, new SpawnDetails("WarningBossHidden", 0, 0));   
+        spawnMap.put(18000, new SpawnDetails("Boss1", 300, -100));
+
+        spawnMap.put(15910, new SpawnDetails("PowerUp-HealthUp", BOARD_WIDTH / 2, 0));
     }
 
     // private void loadSpawnDetails() {
@@ -180,29 +208,22 @@ public class Scene2 extends JPanel {
     //     spawnMap.put(452, new SpawnDetails("PowerUp-DamageUp", 400, 0));
     //     spawnMap.put(653, new SpawnDetails("PowerUp-ShotSizeUp", 500, 0));
     //     spawnMap.put(753, new SpawnDetails("PowerUp-GunCountUp", 350, 0));
-
     //     spawnMap.put(30, new SpawnDetails("Boss1", 300, -100));
-
     //     spawnMap.put(20, new SpawnDetails("Alien0", 200, 0));
     //     spawnMap.put(21, new SpawnDetails("Alien1", 250, 0));
     //     spawnMap.put(23, new SpawnDetails("Alien2", 300, 0));
-
     //     spawnMap.put(400, new SpawnDetails("Alien1", 400, 0));
     //     spawnMap.put(511, new SpawnDetails("Alien1", 450, 0));
     //     spawnMap.put(622, new SpawnDetails("Alien1", 500, 0));
     //     spawnMap.put(733, new SpawnDetails("Alien1", 550, 0));
-
     //     spawnMap.put(734, new SpawnDetails("Alien2", 300, 0));
-
     //     spawnMap.put(810, new SpawnDetails("Alien1", 100, 0));
     //     spawnMap.put(921, new SpawnDetails("Alien1", 150, 0));
     //     spawnMap.put(1632, new SpawnDetails("Alien2", 200, 0));
     //     spawnMap.put(1143, new SpawnDetails("Alien1", 350, 0));
     //     spawnMap.put(1203, new SpawnDetails("Alien2", 350, 0));
-
-    //     // spawnMap.put(300, new SpawnDetails("RocketMode", 0, 0));
+    //     // spawnMap.put(100, new SpawnDetails("Win", 0, 0));
     // }
-
     public void start() {
         addKeyListener(new TAdapter());
         setFocusable(true);
@@ -235,6 +256,7 @@ public class Scene2 extends JPanel {
         explosions = new ArrayList<>();
         shots = new ArrayList<>();
         rockets = new ArrayList<>();
+        bombs = new ArrayList<>();
         lazers = new ArrayList<>();
 
         // for (int i = 0; i < 4; i++) {
@@ -292,7 +314,7 @@ public class Scene2 extends JPanel {
         int barWidth = 100;
         int barHeight = 12;
         int x = 20;
-        int y = 30;
+        int y = 80;
 
         // Draw background
         g.setColor(Color.DARK_GRAY);
@@ -318,7 +340,7 @@ public class Scene2 extends JPanel {
         int barWidth = 100;
         int barHeight = 12;
         int x = 20;
-        int y = 50;
+        int y = 100;
 
         // Draw background
         g.setColor(Color.DARK_GRAY);
@@ -370,7 +392,7 @@ public class Scene2 extends JPanel {
             int shieldWidth = (int) ((double) boss.getShieldHealth() / boss.getMaxShieldHealth() * barWidth);
             g.setColor(Color.BLUE);
             g.fillRect(x, y - 8, shieldWidth, barHeight);
-            
+
             // Draw border
             g.setColor(Color.WHITE);
             g.drawRect(x, y - 8, barWidth, barHeight);
@@ -489,8 +511,54 @@ public class Scene2 extends JPanel {
                     boss1Rocket2Left(boss);
                     boss.powerMode2Left--;
                 }
-            }
 
+                Bomb bomb = new Bomb(0, 0);
+                int chance1 = 40; // chance to drop a bomb
+                int offsetX = 0;
+                int offsetY = 0;
+
+                if (frame % chance1 == 0 && boss.isVisible() && bomb.isDestroyed()) {
+
+                    switch (gunPos) {
+                        case 0 -> {
+                            offsetX = 50;
+                            offsetY = 50;
+                        }
+                        case 1 -> {
+                            offsetX = 80;
+                            offsetY = 50;
+                        }
+                        case 2 -> {
+                            offsetX = 50;
+                            offsetY = 90;
+                        }
+                        case 3 -> {
+                            offsetX = 80;
+                            offsetY = 90;
+                        }
+                        default -> {
+                        }
+                    }
+                    gunPos++;
+                    if (gunPos > 3) {
+                        gunPos = 0;
+                    }
+                    bomb.setDestroyed(false);
+                    bomb.setX(boss.getX() + offsetX);
+                    bomb.setY(boss.getY() + offsetY);
+                    bombs.add(bomb);
+                    try {
+                        audioPlayerEffect = new AudioPlayer(SOUND_EFFECT_BOMB, false);
+                        audioPlayerEffect.play();
+                    } catch (UnsupportedAudioFileException ex) {
+                        throw new RuntimeException(ex);
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    } catch (LineUnavailableException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+            }
             if (boss.isDying()) {
 
                 boss.die();
@@ -523,9 +591,6 @@ public class Scene2 extends JPanel {
             g.drawImage(player.getImage(), drawX, drawY, scaledWidth, scaledHeight, this);
             // g.drawRect(player.getX(), player.getY(), -12, -38);
             // g.drawRect(drawX, drawY, scaledWidth, scaledHeight);
-            g.drawString("Player Frame# " + player.getFrame(), 300, 10);
-            g.drawString("Health Count# " + player.getHealth(), 430, 10);
-            g.drawString("Player Action# " + player.getAction(), 550, 10);
 
             //making lazer
             // g.drawImage(player.getLazerRay(), player.getX(), player.getY(), 30, -700, this);
@@ -579,13 +644,9 @@ public class Scene2 extends JPanel {
 
     private void drawBombing(Graphics g) {
 
-        for (Enemy e : enemies) {
-            if (e.getLevel() == 0) {
-                continue; // Skip Alien0
-            }
-            Enemy.Bomb b = e.getBomb();
-            if (!b.isDestroyed()) {
-                g.drawImage(b.getImage(), b.getX(), b.getY(), this);
+        for (Bomb bomb : bombs) {
+            if (bomb.isVisible()) {
+                g.drawImage(bomb.getImage(), bomb.getX(), bomb.getY(), this);
             }
         }
     }
@@ -670,24 +731,40 @@ public class Scene2 extends JPanel {
         g.fillRect(0, 0, d.width, d.height);
 
         g.setColor(Color.white);
-        g.drawString("FRAME: " + frame, 10, 10);
-        g.drawString("Kill Count# " + deaths, 120, 10);
+
+        // Top row: Score and Kill
+        g.drawString("Score: " + frame, 20, 25);
+        g.drawString("Kill: " + deaths, 160, 25);
+
+        // Second row: Speed, GunMode
+        g.drawString("Speed: " + player.getSpeed(), 20, 45);
+        g.drawString("GunMode: " + gunCount, 160, 45);
+
+        // Third row: Damage, Shot Intensity
+        g.drawString("Damage: " + shotDamage, 20, 65);
+        g.drawString("Shot Intensity: " + shotCooldownMillis, 160, 65);
 
         g.setColor(Color.green);
 
         if (inGame) {
 
             drawMap(g);  // Draw background stars first
-            drawExplosions(g);
             drawPowreUps(g);
             drawAliens(g);
             drawPlayer(g);
             drawShot(g);
             drawBombing(g);
             drawRockets(g);
+            drawExplosions(g);
             drawHealthBar(g);
             drawPowerBar(g);
             drawLazer(g);
+
+            if (isIntro) drawIntroScript(g);
+
+            if (showWarningBoss) drawWarningBoss(g);
+
+            if (isScene2Win) drawScene2Win(g);
 
         } else {
 
@@ -701,23 +778,37 @@ public class Scene2 extends JPanel {
         Toolkit.getDefaultToolkit().sync();
     }
 
+    private void drawIntroScript(Graphics g) {
+        // Fade-in effect based on frame
+        int alpha = Math.min(255, frame * 3); // Fade in over 85 frames (~1.5 sec)
+        Color introDanger = new Color(255, 0, 0, alpha); // Red with fade
+        Color introColor = new Color(0, 255, 255, alpha); // Cyan with fade
+
+        g.setColor(introDanger);
+        g.setFont(new Font("Orbitron", Font.BOLD, 28)); // Use a sci-fi font if available
+        g.drawString("NEW MESSAGE!", 80, 170);
+
+        g.setColor(introColor);
+        g.setFont(new Font("Orbitron", Font.PLAIN, 20));
+        g.drawString("You are approaching the alien boss's stronghold.", 80, 210);
+        g.drawString("Be careful—alien defenses are strongest here!", 80, 290);
+        g.drawString("Show the galaxy what a true hero can do!", 80, 320);
+        g.drawString("This is your moment—fight with everything you've got!", 80, 350);
+
+        g.setFont(new Font("Orbitron", Font.BOLD, 22));
+        g.setColor(new Color(255, 255, 0, alpha)); // Yellow for emphasis
+        g.drawString("Good Luck, Pilot!", 80, 400);
+    }
+
     private void gameOver(Graphics g) {
-
-        g.setColor(Color.black);
-        g.fillRect(0, 0, BOARD_WIDTH, BOARD_HEIGHT);
-
-        g.setColor(new Color(0, 32, 48));
-        g.fillRect(50, BOARD_WIDTH / 2 - 30, BOARD_WIDTH - 100, 50);
-        g.setColor(Color.white);
-        g.drawRect(50, BOARD_WIDTH / 2 - 30, BOARD_WIDTH - 100, 50);
-
-        var small = new Font("Helvetica", Font.BOLD, 14);
-        var fontMetrics = this.getFontMetrics(small);
-
-        g.setColor(Color.white);
-        g.setFont(small);
-        g.drawString(message, (BOARD_WIDTH - fontMetrics.stringWidth(message)) / 2,
-                BOARD_WIDTH / 2);
+        try {
+            audioPlayer.stop();
+        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        Game.saveScoreToCSV(frame, deaths);
+        game.loadGameOver(1);
     }
 
     private void fireShot() {
@@ -726,7 +817,6 @@ public class Scene2 extends JPanel {
         int y = player.getY();
 
         long now = System.currentTimeMillis();
-        System.out.println("Shots: " + shots.size());
         if (now - lastShotTime >= shotCooldownMillis) {
             // Create a new shot and add it to the list
             switch (gunCount) {
@@ -743,22 +833,22 @@ public class Scene2 extends JPanel {
                     lastShotTime = now;
                 }
                 case 3 -> {
-                    Shot shot = new Shot(x - 10, y + 15);
+                    Shot shot = new Shot(x - 10, y + 15, true, -1);
                     shots.add(shot);
                     shot = new Shot(x, y);
                     shots.add(shot);
-                    shot = new Shot(x + 10, y + 15);
+                    shot = new Shot(x + 10, y + 15, true, 1);
                     shots.add(shot);
                     lastShotTime = now;
                 }
                 case 4 -> {
-                    Shot shot = new Shot(x - 10, y + 15);
+                    Shot shot = new Shot(x - 10, y + 15, true, -1);
                     shots.add(shot);
                     shot = new Shot(x, y);
                     shots.add(shot);
-                    shot = new Shot(x + 10, y + 15);
+                    shot = new Shot(x + 10, y + 15, true, 1);
                     shots.add(shot);
-                    shot = new Shot(x -8, y + 10, true, -2);
+                    shot = new Shot(x - 8, y + 10, true, -2);
                     shots.add(shot);
                     shot = new Shot(x + 8, y + 10, true, 2);
                     shots.add(shot);
@@ -770,6 +860,16 @@ public class Scene2 extends JPanel {
                     lastShotTime = now;
                 }
             }
+            try {
+                audioPlayerEffect = new AudioPlayer(SOUND_EFFECT_LAZER_GUN, false);
+                audioPlayerEffect.play();
+            } catch (UnsupportedAudioFileException ex) {
+                throw new RuntimeException(ex);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            } catch (LineUnavailableException ex) {
+                throw new RuntimeException(ex);
+            }
         }
     }
 
@@ -778,9 +878,80 @@ public class Scene2 extends JPanel {
             lazers.add(new LazerRay(i, -10));
         }
         lazerActivatedTime = System.currentTimeMillis();
+        try {
+            audioPlayerEffect = new AudioPlayer(SOUND_EFFECT_PLAYER_LAZER_MODE, false);
+            audioPlayerEffect.play();
+        } catch (UnsupportedAudioFileException ex) {
+            throw new RuntimeException(ex);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        } catch (LineUnavailableException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private void Scene2Win() {
+        try {
+            // audioPlayer.stop();
+            audioPlayer.stop();
+            // audioPlayerEffect.stop();
+            audioPlayer = new AudioPlayer(SOUND_BG_WIN, false);
+            audioPlayer.play();
+        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        isScene2Win = true;
+        playerSpeed = player.getSpeed();
+        playerHealth = player.getHealth();
+        playerPower = player.getPower();
+        kill += deaths;
+    }
+
+    private void drawScene2Win(Graphics g) {
+        g.setColor(winColor);
+        g.setFont(new Font("Helvetica", Font.BOLD, 24));
+        g.drawString("Well Done Hero!", BOARD_WIDTH / 2 - 50, BOARD_HEIGHT / 2 - 20);
+        g.setFont(new Font("Helvetica", Font.PLAIN, 18));
+        g.drawString("You Just Saved The Earth!...", BOARD_WIDTH / 2 - 80, BOARD_HEIGHT / 2 + 20);
+    }
+
+    private void drawWarningBoss(Graphics g) {
+        g.setColor(Color.red);
+        g.setFont(new Font("Helvetica", Font.BOLD, 24));
+        g.drawString("WARNING: BOSS AHEAD!", BOARD_WIDTH / 2 - 100, BOARD_HEIGHT / 2 - 20);
+        g.setFont(new Font("Helvetica", Font.PLAIN, 18));
+        g.drawString("The hope is in your hands, Hero!", BOARD_WIDTH / 2 - 120, BOARD_HEIGHT / 2 + 20);
     }
 
     private void update() {
+
+        if (isScene2Win) {
+            winFrame++;
+            winColorFrame++;
+            for (Enemy enemy : enemies) {
+                enemy.setIsAlive(false);
+            }
+            for (EnemyBoss boss : bosses) {
+                boss.setisAlive(false);
+            }
+            player.setY(player.getY() - 2);
+
+            if (winColorFrame <= 10) {
+                winColor = Color.red;
+            } else if (winColorFrame > 20) {
+                winColor = Color.white;
+                winColorFrame = 0; // Reset the frame counter for color change
+            }
+
+            if (winFrame > 350) {
+                inGame = false;
+                timer.stop();
+                game.loadGameWin();
+            }
+
+        }
 
         // Check enemy spawn
         SpawnDetails sd = spawnMap.get(frame);
@@ -815,9 +986,22 @@ public class Scene2 extends JPanel {
                     powerups.add(new MultiShotUp(sd.x, sd.y));
                 }
                 case "RocketMode" -> {
-                    for (int i = 1; i < 600; i = i + 20) {
+                    for (int i = 1; i < 600; i = i + 100) {
                         rockets.add(new Rocket(i, 0));
                     }
+                }
+                case "Win" -> {
+                    Scene2Win();
+                }
+                case "IntroEnd" -> {
+                    System.out.println("fk u");
+                    isIntro = false;
+                }
+                case "WarningBossShown" -> {
+                    showWarningBoss = true;
+                }
+                case "WarningBossHidden" -> {
+                    showWarningBoss = false;
                 }
                 default ->
                     System.out.println("Unknown enemy type: " + sd.type);
@@ -829,7 +1013,6 @@ public class Scene2 extends JPanel {
         //     timer.stop();
         //     message = "Game won!";
         // }
-
         // player
         player.act();
 
@@ -838,6 +1021,16 @@ public class Scene2 extends JPanel {
             if (powerup.isVisible()) {
                 powerup.act();
                 if (powerup.collidesWithPlayer(player)) {
+                    try {
+                        audioPlayerEffect = new AudioPlayer(SOUND_EFFECT_PLAYER_LEVELUP, false);
+                        audioPlayerEffect.play();
+                    } catch (UnsupportedAudioFileException ex) {
+                        throw new RuntimeException(ex);
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    } catch (LineUnavailableException ex) {
+                        throw new RuntimeException(ex);
+                    }
                     powerup.upgrade(player);
                 }
             }
@@ -875,6 +1068,10 @@ public class Scene2 extends JPanel {
                             && shotY >= (enemyY + 15)
                             && shotY <= (enemyY + ALIEN_HEIGHT + 20)) {
 
+                        if (enemy.getIsHit()) {
+                            continue;
+                        }
+
                         if (shot.getDamage() - enemy.getHealth() > 0) {
                             shot.setDamage(shot.getDamage() - enemy.getHealth());
                         } else {
@@ -885,26 +1082,47 @@ public class Scene2 extends JPanel {
                         if (enemy.getHealth() - shot.getDamage() > 0) {
                             enemy.setHealth(enemy.getHealth() - shot.getDamage());
                             explosions.add(new Explosion(enemyX + 25, enemyY + 20, false));
+                            try {
+                                audioPlayerEffect = new AudioPlayer(SOUND_EFFECT_ARCADE_EXPLOSION, false);
+                                audioPlayerEffect.play();
+                            } catch (UnsupportedAudioFileException ex) {
+                                throw new RuntimeException(ex);
+                            } catch (IOException ex) {
+                                throw new RuntimeException(ex);
+                            } catch (LineUnavailableException ex) {
+                                throw new RuntimeException(ex);
+                            }
                         } else {
                             // var ii = new ImageIcon(IMG_EXPLOSION);
                             // var ii = new ImageIcon(IMG_ENEMY);
                             // enemy.setImage(ii.getImage());
                             explosions.add(new Explosion(enemyX + 20, enemyY + 20, true));
                             enemy.setIsAlive(false);
+                            enemy.setIsHit(true);
                             // enemy.setDying(true);
                             if (enemy.getLevel() == 0) {
                                 if (player.getPower() + 0.3 > player.getMaxPower()) {
-                                    player.setPower(player.getMaxPower()); 
-                                }else {
+                                    player.setPower(player.getMaxPower());
+                                } else {
                                     player.setPower(player.getPower() + 0.3);
                                 }
                             } else {
                                 double powerToAdd = (double) enemy.getLevel() / 2;
                                 if (player.getPower() + powerToAdd > player.getMaxPower()) {
-                                    player.setPower(player.getMaxPower()); 
-                                }else {
+                                    player.setPower(player.getMaxPower());
+                                } else {
                                     player.setPower(player.getPower() + ((double) enemy.getLevel() / 2));
                                 }
+                            }
+                            try {
+                                audioPlayerEffect = new AudioPlayer(SOUND_EFFECT_ENEMY_EXPLOSION, false);
+                                audioPlayerEffect.play();
+                            } catch (UnsupportedAudioFileException ex) {
+                                throw new RuntimeException(ex);
+                            } catch (IOException ex) {
+                                throw new RuntimeException(ex);
+                            } catch (LineUnavailableException ex) {
+                                throw new RuntimeException(ex);
                             }
                             deaths++;
                         }
@@ -922,40 +1140,86 @@ public class Scene2 extends JPanel {
                             && shotY >= (enemyY)
                             && shotY <= (enemyY + boss.getHeight())) {
 
+                        if (boss.getIsHit()) {
+                            continue;
+                        }
+
                         shot.die();
                         shotsToRemove.add(shot);
 
                         if (!boss.getShielded()) {
                             if (boss.getHealth() - shotDamage > 0) {
                                 boss.setHealth(boss.getHealth() - shotDamage);
-                                if (boss.getHealth() < 10 && !boss.getShielded()) {
+                                if (boss.getHealth() < 200 && !boss.getShielded()) {
                                     boss.setShieldHealth(boss.getMaxShieldHealth());
                                     boss.setShielded(true);
                                 }
-                                if (boss.getPowerModeCount() > 0) {
+                                if (boss.getPowerModeCount() > 0 && !boss.getisPowerMode()) {
                                     boss.setPowerModeCount(boss.getPowerModeCount() - 1);
                                     boss.setisPowerMode(true);
+                                    try {
+                                        audioPlayerEffect = new AudioPlayer(SOUND_EFFECT_BOSS_POWERMODE, false);
+                                        audioPlayerEffect.play();
+                                    } catch (UnsupportedAudioFileException ex) {
+                                        throw new RuntimeException(ex);
+                                    } catch (IOException ex) {
+                                        throw new RuntimeException(ex);
+                                    } catch (LineUnavailableException ex) {
+                                        throw new RuntimeException(ex);
+                                    }
                                 }
-                                explosions.add(new Explosion(enemyX, enemyY, false));
+                                explosions.add(new Explosion(enemyX + 50, enemyY + 50, false));
+                                try {
+                                    audioPlayerEffect = new AudioPlayer(SOUND_EFFECT_BOSS_EXPLOSION_SMALL, false);
+                                    audioPlayerEffect.play();
+                                } catch (UnsupportedAudioFileException ex) {
+                                    throw new RuntimeException(ex);
+                                } catch (IOException ex) {
+                                    throw new RuntimeException(ex);
+                                } catch (LineUnavailableException ex) {
+                                    throw new RuntimeException(ex);
+                                }
                             } else {
                                 // var ii = new ImageIcon(IMG_EXPLOSION);
                                 // var ii = new ImageIcon(IMG_ENEMY);
                                 // enemy.setImage(ii.getImage());
-                                explosions.add(new Explosion(enemyX, enemyY, true));
+                                explosions.add(new Explosion(enemyX + 50, enemyY + 50, true));
+                                try {
+                                    audioPlayerEffect = new AudioPlayer(SOUND_EFFECT_BOSS_EXPLOSION_BIG, false);
+                                    audioPlayerEffect.play();
+                                } catch (UnsupportedAudioFileException ex) {
+                                    throw new RuntimeException(ex);
+                                } catch (IOException ex) {
+                                    throw new RuntimeException(ex);
+                                } catch (LineUnavailableException ex) {
+                                    throw new RuntimeException(ex);
+                                }
                                 // boss.setDying(true);
                                 boss.setisAlive(false);
+                                boss.setIsHit(true);
                                 if (player.getPower() + 3 > player.getMaxPower()) {
-                                    player.setPower(player.getMaxPower()); 
-                                }else {
+                                    player.setPower(player.getMaxPower());
+                                } else {
                                     player.setPower(player.getPower() + 3);
                                 }
                                 deaths = deaths + 5;
                                 shot.die();
                                 shotsToRemove.add(shot);
+                                Scene2Win();
                             }
                         } else {
                             if (boss.getShieldHealth() - shotDamage > 0) {
                                 boss.setShieldHealth(boss.getShieldHealth() - shotDamage);
+                                try {
+                                    audioPlayerEffect = new AudioPlayer(SOUND_EFFECT_LAZER_SHIELD, false);
+                                    audioPlayerEffect.play();
+                                } catch (UnsupportedAudioFileException ex) {
+                                    throw new RuntimeException(ex);
+                                } catch (IOException ex) {
+                                    throw new RuntimeException(ex);
+                                } catch (LineUnavailableException ex) {
+                                    throw new RuntimeException(ex);
+                                }
                             } else {
                                 boss.setShielded(false);
                             }
@@ -979,13 +1243,23 @@ public class Scene2 extends JPanel {
                         shot.die();
                         shotsToRemove.add(shot);
                         if (player.getPower() + 0.2 > player.getMaxPower()) {
-                            player.setPower(player.getMaxPower()); 
-                        }else {
+                            player.setPower(player.getMaxPower());
+                        } else {
                             player.setPower(player.getPower() + 0.2);
                         }
                         rocket.setDestroyed(true);
                         rocketsToRemove.add(rocket);
                         explosions.add(new Explosion(rocketX, rocketY, false));
+                        try {
+                            audioPlayerEffect = new AudioPlayer(SOUND_EFFECT_ARCADE_EXPLOSION, false);
+                            audioPlayerEffect.play();
+                        } catch (UnsupportedAudioFileException ex) {
+                            throw new RuntimeException(ex);
+                        } catch (IOException ex) {
+                            throw new RuntimeException(ex);
+                        } catch (LineUnavailableException ex) {
+                            throw new RuntimeException(ex);
+                        }
                     }
                 }
                 rockets.removeAll(rocketsToRemove);
@@ -1006,6 +1280,66 @@ public class Scene2 extends JPanel {
             }
         }
         shots.removeAll(shotsToRemove);
+
+        // Bomb
+        List<Bomb> bombsToRemove = new ArrayList<>();
+
+        for (Bomb bomb : bombs) {
+            int bombX = bomb.getX();
+            int bombY = bomb.getY();
+            int playerX = player.getX();
+            int playerY = player.getY();
+
+            if (player.isVisible() && !bomb.isDestroyed() && !player.isInvincible()
+                    && bombX >= (playerX - PLAYER_WIDTH)
+                    && bombX <= (playerX + PLAYER_WIDTH)
+                    && bombY >= (playerY - PLAYER_HEIGHT)
+                    && bombY <= (playerY)) {
+
+                bomb.setDestroyed(true);
+                bombsToRemove.add(bomb);
+                int health = player.getHealth();
+                if (health > 0) {
+                    health--;
+                    player.setHealth(health);
+                    player.setInvincible(30);
+                    try {
+                        audioPlayerEffect = new AudioPlayer(SOUND_EFFECT_PLAYER_HIT1, false);
+                        audioPlayerEffect.play();
+                    } catch (UnsupportedAudioFileException ex) {
+                        throw new RuntimeException(ex);
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    } catch (LineUnavailableException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                } else {
+                    var ii = new ImageIcon(IMG_EXPLOSION);
+                    player.setImage(ii.getImage());
+                    // player.setDying(true);
+                    try {
+                        audioPlayerEffect = new AudioPlayer(SOUND_EFFECT_PLAYER_HIT2, false);
+                        audioPlayerEffect.play();
+                    } catch (UnsupportedAudioFileException ex) {
+                        throw new RuntimeException(ex);
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    } catch (LineUnavailableException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                    player.setIsAlive(false);
+                }
+            }
+
+            if (!bomb.isDestroyed()) {
+                bomb.setY(bomb.getY() + 5);
+                if (bomb.getY() >= GROUND - BOMB_HEIGHT) {
+                    bomb.setDestroyed(true);
+                }
+            }
+        }
+        bombs.removeAll(bombsToRemove);
+
 
         // Rocket collision detection & movement
         List<Rocket> rocketsToRemove = new ArrayList<>();
@@ -1029,10 +1363,31 @@ public class Scene2 extends JPanel {
                         health--;
                         player.setHealth(health);
                         player.setInvincible(30);
+                        try {
+                            audioPlayerEffect = new AudioPlayer(SOUND_EFFECT_PLAYER_HIT1, false);
+                            audioPlayerEffect.play();
+                        } catch (UnsupportedAudioFileException ex) {
+                            throw new RuntimeException(ex);
+                        } catch (IOException ex) {
+                            throw new RuntimeException(ex);
+                        } catch (LineUnavailableException ex) {
+                            throw new RuntimeException(ex);
+                        }
                     } else {
                         var ii = new ImageIcon(IMG_EXPLOSION);
                         player.setImage(ii.getImage());
-                        player.setDying(true);
+                        // player.setDying(true);
+                        try {
+                            audioPlayerEffect = new AudioPlayer(SOUND_EFFECT_PLAYER_HIT2, false);
+                            audioPlayerEffect.play();
+                        } catch (UnsupportedAudioFileException ex) {
+                            throw new RuntimeException(ex);
+                        } catch (IOException ex) {
+                            throw new RuntimeException(ex);
+                        } catch (LineUnavailableException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                        player.setIsAlive(false);
                     }
                 }
 
@@ -1047,8 +1402,7 @@ public class Scene2 extends JPanel {
                         rocket.tracking = true;
                         rocket.isSpeeding = false;
                     }
-                } 
-                else if (!rocket.isSpeeding) {
+                } else if (!rocket.isSpeeding) {
                     // Calculate direction vector
                     double dx = playerX - rocketX;
                     double dy = playerY - rocketY;
@@ -1080,7 +1434,7 @@ public class Scene2 extends JPanel {
                 }
 
                 // Destroy rocket if it goes out of bounds
-                if (rocketY >= GROUND - BOMB_HEIGHT || rocketX < 0 || rocketX > BOARD_WIDTH) {
+                if (rocketY >= BOARD_HEIGHT + 100 || rocketX < 0 || rocketX > BOARD_WIDTH) {
                     rocket.setDestroyed(true);
                     rocketsToRemove.add(rocket);
                 }
@@ -1114,7 +1468,8 @@ public class Scene2 extends JPanel {
 
         int offsetX = 0;
         int offsetY = 0;
-        int chance = 0;
+        int chance1 = 0;
+        int chance2 = 0;
         for (Enemy enemy : enemies) {
             switch (enemy.getLevel()) {
                 case 0 -> {
@@ -1123,7 +1478,8 @@ public class Scene2 extends JPanel {
                 case 1 -> {
                     offsetX = 31;
                     offsetY = 34;
-                    chance = randomizer.nextInt(15);
+                    chance1 = 10;
+                    chance2 = randomizer.nextInt(20);
                 }
                 case 2 -> {
                     if (randomizer.nextBoolean()) {
@@ -1133,83 +1489,63 @@ public class Scene2 extends JPanel {
                         offsetX = 40;
                         offsetY = 34;
                     }
-                    chance = randomizer.nextInt(10);
+                    chance1 = 10;
+                    chance2 = randomizer.nextInt(15);
                 }
                 default -> {
                     System.out.println("Unknown enemy level: " + enemy.getLevel());
                 }
             }
 
-            Enemy.Bomb bomb = enemy.getBomb();
+            Bomb bomb = new Bomb(0, 0);
 
-            if (chance == CHANCE && enemy.isVisible() && bomb.isDestroyed()) {
+            if (frame % chance1 == 0 && chance2 == CHANCE && enemy.isVisible() && bomb.isDestroyed()) {
 
                 bomb.setDestroyed(false);
                 bomb.setX(enemy.getX() + offsetX);
                 bomb.setY(enemy.getY() + offsetY);
-            }
-
-            int bombX = bomb.getX();
-            int bombY = bomb.getY();
-            int playerX = player.getX();
-            int playerY = player.getY();
-
-            if (player.isVisible() && !bomb.isDestroyed() && !player.isInvincible()
-                    && bombX >= (playerX - PLAYER_WIDTH)
-                    && bombX <= (playerX + PLAYER_WIDTH)
-                    && bombY >= (playerY - PLAYER_HEIGHT)
-                    && bombY <= (playerY)) {
-
-                bomb.setDestroyed(true);
-                int health = player.getHealth();
-                if (health > 0) {
-                    health--;
-                    player.setHealth(health);
-                    player.setInvincible(30);
-                } else {
-                    var ii = new ImageIcon(IMG_EXPLOSION);
-                    player.setImage(ii.getImage());
-                    player.setDying(true);
-                }
-            }
-
-            if (!bomb.isDestroyed()) {
-                bomb.setY(bomb.getY() + 5);
-                if (bomb.getY() >= GROUND - BOMB_HEIGHT) {
-                    bomb.setDestroyed(true);
+                bombs.add(bomb);
+                try {
+                    audioPlayerEffect = new AudioPlayer(SOUND_EFFECT_BOMB, false);
+                    audioPlayerEffect.play();
+                } catch (UnsupportedAudioFileException ex) {
+                    throw new RuntimeException(ex);
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                } catch (LineUnavailableException ex) {
+                    throw new RuntimeException(ex);
                 }
             }
         }
 
         // chance = randomizer.nextInt(50);
         // for (EnemyBoss boss : bosses) {
-
         //     // Rocket
         //     if (chance == CHANCE) {
         //         rockets.add(new Rocket(boss.getX(), boss.getY()));
-
         //         System.out.println("Rocket!!!!!");
         //     }
         // }
-
-        if (spacePressed) fireShot();
+        if (spacePressed) {
+            fireShot();
+        }
 
         for (LazerRay lazer : lazers) {
             if (lazer.isVisible()) {
                 for (Enemy enemy : enemies) {
-                    if (enemy.isVisible() &&
-                        lazer.getX() >= enemy.getX() &&
-                        lazer.getX() <= enemy.getX() + enemy.getWidth() &&
-                        lazer.getY() <= enemy.getY() + enemy.getHeight()) {
+                    if (enemy.isVisible()
+                            && lazer.getX() >= enemy.getX()
+                            && lazer.getX() <= enemy.getX() + enemy.getWidth()
+                            && lazer.getY() <= enemy.getY() + enemy.getHeight()) {
                         enemy.setDying(true);
                         explosions.add(new Explosion(enemy.getX(), enemy.getY(), true));
                     }
                 }
                 for (EnemyBoss boss : bosses) {
-                    if (boss.isVisible() &&
-                        lazer.getX() >= boss.getX() &&
-                        lazer.getX() <= boss.getX() + boss.getWidth() &&
-                        lazer.getY() <= boss.getY() + boss.getHeight()) {
+                    if (boss.isVisible()
+                            && lazer.getX() >= boss.getX()
+                            && lazer.getX() <= boss.getX() + boss.getWidth()
+                            && lazer.getY() <= boss.getY() + boss.getHeight()) {
                         boss.setisAlive(false);
                         explosions.add(new Explosion(boss.getX(), boss.getY(), true));
                     }
@@ -1226,32 +1562,28 @@ public class Scene2 extends JPanel {
         }
     }
 
-    private void boss1Rocket1Left(EnemyBoss boss) 
-    {
+    private void boss1Rocket1Left(EnemyBoss boss) {
         rockets.add(new Rocket(boss.getX() + 40, boss.getY() + 130, true, -rocketSpeed, 0, 15));
         rockets.add(new Rocket(boss.getX() + 40, boss.getY() + 132, true, -rocketSpeed, 0, 20));
         rockets.add(new Rocket(boss.getX() + 40, boss.getY() + 134, true, -rocketSpeed, 0, 25));
         rockets.add(new Rocket(boss.getX() + 40, boss.getY() + 136, true, -rocketSpeed, 0, 30));
     }
 
-    private void boss1Rocket2Left(EnemyBoss boss) 
-    {
+    private void boss1Rocket2Left(EnemyBoss boss) {
         rockets.add(new Rocket(boss.getX() + 40, boss.getY() + 100, true, -rocketSpeed, 0, 15));
         rockets.add(new Rocket(boss.getX() + 40, boss.getY() + 102, true, -rocketSpeed, 0, 20));
         rockets.add(new Rocket(boss.getX() + 40, boss.getY() + 104, true, -rocketSpeed, 0, 25));
         rockets.add(new Rocket(boss.getX() + 40, boss.getY() + 106, true, -rocketSpeed, 0, 30));
     }
 
-    private void boss1Rocket1Right(EnemyBoss boss) 
-    {
+    private void boss1Rocket1Right(EnemyBoss boss) {
         rockets.add(new Rocket(boss.getX() + 80, boss.getY() + 130, true, rocketSpeed, 0, 15));
         rockets.add(new Rocket(boss.getX() + 80, boss.getY() + 132, true, rocketSpeed, 0, 20));
         rockets.add(new Rocket(boss.getX() + 80, boss.getY() + 134, true, rocketSpeed, 0, 25));
         rockets.add(new Rocket(boss.getX() + 80, boss.getY() + 136, true, rocketSpeed, 0, 30));
     }
 
-    private void boss1Rocket2Right(EnemyBoss boss) 
-    {
+    private void boss1Rocket2Right(EnemyBoss boss) {
         rockets.add(new Rocket(boss.getX() + 80, boss.getY() + 100, true, rocketSpeed, 0, 15));
         rockets.add(new Rocket(boss.getX() + 80, boss.getY() + 102, true, rocketSpeed, 0, 20));
         rockets.add(new Rocket(boss.getX() + 80, boss.getY() + 104, true, rocketSpeed, 0, 25));
@@ -1285,7 +1617,6 @@ public class Scene2 extends JPanel {
 
         @Override
         public void keyPressed(KeyEvent e) {
-            System.out.println("Scene2.keyPressed: " + e.getKeyCode());
 
             player.keyPressed(e);
 
@@ -1299,7 +1630,7 @@ public class Scene2 extends JPanel {
                 if (player.getPower() == player.getMaxPower()) {
                     player.setPower(0);
                     activeLazers();
-                } 
+                }
             }
 
         }

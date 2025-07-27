@@ -1,6 +1,7 @@
 package gdd.sprite;
 
 import static gdd.Global.*;
+import gdd.image_clips.ReadCSV;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
@@ -21,92 +22,13 @@ public class Boss1 extends EnemyBoss {
     public int clipNoDestroy = 0;
     public int clipNoPowerMode = 0;
 
-    private final Rectangle[] clips_shield = new Rectangle[]{
-        new Rectangle(0, 0, 110, 80), // 0 
-        new Rectangle(128, 0, 110, 80), // 1 
-        new Rectangle(256, 0, 110, 80), // 2 
-        new Rectangle(384, 0, 110, 80), // 3 
-        new Rectangle(512, 0, 110, 80), // 4 
-        new Rectangle(640, 0, 110, 80), // 5 
-        new Rectangle(768, 0, 110, 80), // 6 
-        new Rectangle(896, 0, 110, 80), // 7 
-        new Rectangle(1024, 0, 110, 80), // 8 
-        new Rectangle(1152, 0, 110, 80), // 9 
-        new Rectangle(1280, 0, 110, 80), // 10 
-        new Rectangle(1408, 0, 110, 80), // 11
-        new Rectangle(1536, 0, 110, 80), // 12
-        new Rectangle(1664, 0, 110, 80), // 13
-        new Rectangle(1792, 0, 110, 80), // 14
-        new Rectangle(1920, 0, 110, 80), // 15
-    };
-
-    public final Rectangle[] clips_engine = new Rectangle[]{
-        new Rectangle(0, 0, 110, 128), // 0 
-        new Rectangle(128, 0, 110, 128), // 1 
-        new Rectangle(256, 0, 110, 128), // 2 
-        new Rectangle(384, 0, 110, 128), // 3 
-        new Rectangle(512, 0, 110, 128), // 4 
-        new Rectangle(640, 0, 110, 128), // 5 
-        new Rectangle(768, 0, 110, 128), // 6 
-        new Rectangle(896, 0, 110, 128), // 7 
-        new Rectangle(1024, 0, 110, 128), // 8 
-        new Rectangle(1152, 0, 110, 128), // 9 
-        new Rectangle(1280, 0, 110, 128), // 10 
-        new Rectangle(1408, 0, 110, 128), // 11
-    };
-
-    public final Rectangle[] clips_powerMode = new Rectangle[] {
-        new Rectangle(0, 0, 110, 128),    // 0 
-        new Rectangle(128, 0, 110, 128),  // 1 
-        new Rectangle(256, 0, 110, 128),  // 2 
-        new Rectangle(384, 0, 110, 128),  // 3 
-        new Rectangle(512, 0, 110, 128),  // 4 
-        new Rectangle(640, 0, 110, 128),  // 5 
-        new Rectangle(768, 0, 110, 128),  // 6 
-        new Rectangle(896, 0, 110, 128),  // 7 
-        new Rectangle(1024, 0, 110, 128), // 8 
-        new Rectangle(1152, 0, 110, 128), // 9 
-        new Rectangle(1280, 0, 110, 128), // 10 
-        new Rectangle(1408, 0, 110, 128), // 11
-        new Rectangle(1536, 0, 110, 128), // 12
-        new Rectangle(1664, 0, 110, 128), // 13
-        new Rectangle(1792, 0, 110, 128), // 14
-        new Rectangle(1920, 0, 110, 128), // 15
-        new Rectangle(2048, 0, 110, 128), // 16
-        new Rectangle(2176, 0, 110, 128), // 17
-        new Rectangle(2304, 0, 110, 128), // 18
-        new Rectangle(2432, 0, 110, 128), // 19
-        new Rectangle(2560, 0, 110, 128), // 20
-        new Rectangle(2688, 0, 110, 128), // 21
-        new Rectangle(2816, 0, 110, 128), // 22
-        new Rectangle(2944, 0, 110, 128), // 23
-        new Rectangle(3072, 0, 110, 128), // 24
-        new Rectangle(3200, 0, 110, 128), // 25
-        new Rectangle(3328, 0, 110, 128), // 26
-        new Rectangle(3456, 0, 110, 128), // 27
-        new Rectangle(3584, 0, 110, 128), // 28
-        new Rectangle(3712, 0, 110, 128), // 29
-    };
-
-    public final Rectangle[] clips_destroy = new Rectangle[]{
-        new Rectangle(0, 0, 110, 128), // 0 
-        new Rectangle(128, 0, 110, 128), // 1 
-        new Rectangle(256, 0, 110, 128), // 2 
-        new Rectangle(384, 0, 110, 128), // 3 
-        new Rectangle(512, 0, 110, 128), // 4 
-        new Rectangle(640, 0, 110, 128), // 5 
-        new Rectangle(768, 0, 110, 128), // 6 
-        new Rectangle(896, 0, 110, 128), // 7 
-        new Rectangle(1024, 0, 110, 128), // 8 
-        new Rectangle(1152, 0, 110, 128), // 9 
-        new Rectangle(1280, 0, 110, 128), // 10 
-        new Rectangle(1408, 0, 110, 128), // 11
-        new Rectangle(1536, 0, 110, 128),// 12
-        new Rectangle(1664, 0, 110, 128),// 13
-    };
+    private final Rectangle[] clips_shield = ReadCSV.loadClipsFromCSV("src/gdd/db/boss1_shield_clips.csv");
+    private final Rectangle[] clips_engine = ReadCSV.loadClipsFromCSV("src/gdd/db/boss1_engine_clips.csv");
+    private final Rectangle[] clips_powerMode = ReadCSV.loadClipsFromCSV("src/gdd/db/boss1_powerMode_clips.csv");
+    private final Rectangle[] clips_destroy = ReadCSV.loadClipsFromCSV("src/gdd/db/boss1_destory_clips.csv");
 
     public Boss1(int x, int y) {
-        super(x, y, 20, IMG_BOSS1, IMG_BOSS1_SHIELDS, IMG_BOSS1_ENGINES, IMG_BOSS1_WEAPON, IMG_BOSS1_DESTRUCTION, 2, IMG_BOSS1_POWERMODE, 1);
+        super(x, y, 1000, IMG_BOSS1, IMG_BOSS1_SHIELDS, IMG_BOSS1_ENGINES, IMG_BOSS1_WEAPON, IMG_BOSS1_DESTRUCTION, 10, IMG_BOSS1_POWERMODE, 100);
     }
 
     @Override

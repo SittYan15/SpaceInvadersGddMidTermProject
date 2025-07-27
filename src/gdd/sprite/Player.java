@@ -1,7 +1,7 @@
 package gdd.sprite;
 
 import static gdd.Global.*;
-import gdd.image_clips.player_clip;
+import gdd.image_clips.ReadCSV;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
@@ -13,7 +13,7 @@ public class Player extends Sprite {
     private static final int START_X = 270;
     private static final int START_Y = 540;
     private int width;
-    private int currentSpeed = 2;
+    private int currentSpeed = playerSpeed;
     private Image lazerRay;
     private int lazerClipNo = 0;
     private int destoryClipNo = 0;
@@ -40,16 +40,20 @@ public class Player extends Sprite {
     private static final int ACT_INVINCIBLE = 9; // INVINCIBLE
     private int action = ACT_STAND;
 
+    public static final Rectangle[] clips = ReadCSV.loadClipsFromCSV("src/gdd/db/player_clips.csv");
+    public static final Rectangle[] lazerClips = ReadCSV.loadClipsFromCSV("src/gdd/db/lazer_clips.csv");
+    public static final Rectangle[] destroyClips = ReadCSV.loadClipsFromCSV("src/gdd/db/destory_clips.csv");
+
     public Player() {
         initPlayer();
     }
 
     private void initPlayer() {
 
-        setHealth(1);
+        setHealth(playerHealth);
         setMaxHealth(10);
-        setPower(0);
-        setMaxPower(10);
+        setPower(playerPower);
+        setMaxPower(50);
 
         var ii = new ImageIcon(IMG_PLAYER);
         setImage(ii.getImage());
@@ -74,12 +78,12 @@ public class Player extends Sprite {
 
     @Override
     public int getHeight() {
-        return player_clip.clips[clipNo].height;
+        return clips[clipNo].height;
     }
 
     @Override
     public int getWidth() {
-        return player_clip.clips[clipNo].width;
+        return clips[clipNo].width;
     }
 
     public void setLazerRay(Image lazerRay) {
@@ -87,7 +91,7 @@ public class Player extends Sprite {
     }
 
     public Image getLazerRay() {
-        Rectangle bound = player_clip.lazerClips[lazerClipNo];
+        Rectangle bound = lazerClips[lazerClipNo];
         BufferedImage bImage = toBufferedImage(lazerRay);
         return bImage.getSubimage(bound.x, bound.y, bound.width, bound.height);
     }
@@ -96,7 +100,7 @@ public class Player extends Sprite {
     public Image getImage() {
 
         if (isAlive) {
-            Rectangle bound = player_clip.clips[clipNo];
+            Rectangle bound = clips[clipNo];
             BufferedImage bImage = toBufferedImage(image);
             return bImage.getSubimage(bound.x, bound.y, bound.width, bound.height);
         } else {
@@ -105,7 +109,7 @@ public class Player extends Sprite {
     }
 
     public Image getDestory() {
-        Rectangle bound = player_clip.destroyClips[destoryClipNo];
+        Rectangle bound = destroyClips[destoryClipNo];
         BufferedImage bImage = toBufferedImage(destroy);
         return bImage.getSubimage(bound.x, bound.y, bound.width, bound.height);
     }

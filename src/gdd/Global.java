@@ -7,13 +7,21 @@ public class Global {
     }
     public static boolean spacePressed = false;
 
-    public static int shotDamage = 3;
-    public static int gunCount = 4;
+    // Need to set default values for the game
+    public static boolean isScene1Win = false;
+    public static boolean isScene2Win = false;
+    public static int shotDamage = 1;
+    public static int gunCount = 1;
+    public static long shotCooldownMillis = 700;
+    public static int playerSpeed = 1;
+    public static int playerHealth = 10;
+    public static double playerPower = 0;
+    public static int kill = 0;
+    public static int distance = 0;
+
     public static double rocketSpeed = 3.0;
-    public static double playerSpeed = 3.0;
 
     public static long lastShotTime = 0;
-    public static long shotCooldownMillis = 500;
 
     public static final int SCALE_FACTOR = 2; // Scaling factor for sprites
     public static final double BOSS_SCALE_FACTOR = 0.7;
@@ -96,4 +104,6 @@ public class Global {
     public static final String SOUND_EFFECT_PLAYER_HIT2 = "src/audio/player-hit2.wav";
     public static final String SOUND_EFFECT_PLAYER_LEVELUP = "src/audio/player-levelUp.wav";
     public static final String SOUND_EFFECT_PLAYER_LAZER_MODE = "src/audio/riser-fx_C_major.wav";
+
+    public static final String SOUND_BG_WIN = "src/audio/retrogame-win-song_67bpm_F_major.wav";
 }

@@ -1,9 +1,8 @@
 package gdd;
 
-import static gdd.Global.gunCount;
-import static gdd.Global.shotCooldownMillis;
-import static gdd.Global.shotDamage;
+import static gdd.Global.*;
 import gdd.scene.GameOverScene;
+import gdd.scene.GameWinScene;
 import gdd.scene.Scene1;
 import gdd.scene.Scene2;
 import gdd.scene.TitleScene;
@@ -20,12 +19,14 @@ public class Game extends JFrame  {
 
     TitleScene titleScene;
     GameOverScene gameOverScene;
+    GameWinScene gameWinScene;
     Scene1 scene1;
     Scene2 scene2;
 
     public Game() {
         titleScene = new TitleScene(this);
         gameOverScene = new GameOverScene(this);
+        gameWinScene = new GameWinScene(this);
         scene1 = new Scene1(this);
         scene2 = new Scene2(this);
         initUI();
@@ -49,19 +50,49 @@ public class Game extends JFrame  {
         // add(new Title(this));
         add(titleScene);
         titleScene.start();
+        titleScene.setFocusable(true);
+        titleScene.requestFocusInWindow();
+        revalidate();
+        repaint();
+    }
+
+    public void loadTitle(int state) {
+        getContentPane().removeAll();
+        add(titleScene);
+        gameWinScene.stop();
+        titleScene.start();
         revalidate();
         repaint();
     }
 
     public void loadGameOver(int state) {
         getContentPane().removeAll();
-        // add(new Title(this));
         add(gameOverScene);
 
         if (state == 1) scene1.stop();
         else if (state == 2) scene2.stop();
 
+        isScene1Win = false;
+        isScene2Win = false;
+        shotDamage = 1;
+        gunCount = 1;
+        shotCooldownMillis = 700;
+        playerSpeed = 1;
+        playerHealth = 10;
+        playerPower = 0;
+        kill = 0;
+        distance = 0;
+
         gameOverScene.start();
+        revalidate();
+        repaint();
+    }
+
+    public void loadGameWin() {
+        getContentPane().removeAll();
+        add(gameWinScene);
+        scene2.stop();
+        gameWinScene.start();
         revalidate();
         repaint();
     }
@@ -74,9 +105,6 @@ public class Game extends JFrame  {
         else if (state == 1) {
             gameOverScene.stop();
             scene1 = new Scene1(this);
-            shotDamage = 1;
-            gunCount = 1;
-            shotCooldownMillis = 500;
         }
 
         add(scene1);

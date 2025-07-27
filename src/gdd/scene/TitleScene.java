@@ -113,15 +113,34 @@ public class TitleScene extends JPanel {
         g.setFont(g.getFont().deriveFont(10f));
         g.drawString("Game by Chayapol", 10, 650);
 
-        g.setFont(g.getFont().deriveFont(12f));
-        g.setColor(Color.green);
-        g.drawString("Best Scores", 10, 15);
-        g.drawString("Distance: " + String.valueOf(scores.get(0)[0]), 10, 30);
-        g.drawString("Kill: " + String.valueOf(scores.get(0)[1]), 10, 45);
+        // g.setFont(g.getFont().deriveFont(12f));
+        // g.setColor(Color.green);
+        // g.drawString("Best Scores", 10, 15);
+        // g.drawString("Distance: " + String.valueOf(scores.get(0)[0]), 10, 30);
+        // g.drawString("Kill: " + String.valueOf(scores.get(0)[1]), 10, 45);
 
-        g.setColor(Color.blue);
-        g.drawString("Team Member", 10, 60);
-        g.drawString("Sitt Yan Htun (6722114)", 10, 75);
+        // g.setColor(Color.blue);
+        // g.drawString("Team Member", 10, 60);
+        // g.drawString("Sitt Yan Htun (6722114)", 10, 75);
+
+        // Best Scores box with neon border
+        g.setColor(new Color(0, 255, 128));
+        g.drawRect(5, 10, 220, 50);
+        g.setFont(g.getFont().deriveFont(16f));
+        g.drawString("Best Scores", 15, 30);
+        g.setFont(g.getFont().deriveFont(14f));
+        g.setColor(Color.white);
+        g.drawString("Distance: " + scores.get(0)[0], 15, 48);
+        g.drawString("Kill: " + scores.get(0)[1], 135, 48);
+
+        // Team member box
+        g.setColor(new Color(0, 128, 255));
+        g.drawRect(5, 60, 220, 50);
+        g.setFont(g.getFont().deriveFont(15f));
+        g.drawString("Team Member", 15, 80);
+        g.setFont(g.getFont().deriveFont(13f));
+        g.setColor(Color.yellow);
+        g.drawString("Sitt Yan Htun (6722114)", 15, 98);
 
         Toolkit.getDefaultToolkit().sync();
     }
