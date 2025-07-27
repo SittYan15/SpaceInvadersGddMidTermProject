@@ -6,9 +6,9 @@ A classic Space Invaders arcade-style game built using Java. This project was cr
 
 - 👽 Enemy wave generation
 - 🚀 Player spaceship with movement and shooting
-- 💥 Collision detection between bullets and enemies
+- 💥 Collision detection between bullets, rockets, and enemies
 - ❤️ Life system and score tracking
-- 🕹️ Simple GUI using Java Swing or JavaFX
+- 🕹️ Simple GUI using JavaFX
 - 🔁 Game loop with update and render cycle
 
 ## 🛠️ Technologies Used
