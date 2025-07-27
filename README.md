@@ -17,10 +17,10 @@ A classic Space Invaders arcade-style game built using Java. This project was cr
 - IDE: VS Code
 
 ## Resources
-https://foozlecc.itch.io/
-https://mixkit.co/free-sound-effects/game/
-https://elements.envato.com/sound-effects
-https://www.freepik.com/audio/sound-effects
+- https://foozlecc.itch.io/
+- https://mixkit.co/free-sound-effects/game/
+- https://elements.envato.com/sound-effects
+- https://www.freepik.com/audio/sound-effects
 
 ## References
 This project is based from this 
