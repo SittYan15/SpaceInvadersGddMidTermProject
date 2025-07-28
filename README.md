@@ -2,6 +2,22 @@
 
 A classic Space Invaders arcade-style game built using Java. This project was created as part of a game design and development course to demonstrate object-oriented programming, game loop mechanics, collision detection, and basic UI interaction.
 
+## 🎮 Game Story Mode
+
+The aliens are coming to attack the earth, and the player as known as the pilot, his duty is to eliminate the aliens' spacecrafts and the alien boss. To enjoy the story mode by playing the game or watching the game being played on YouTube.
+
+Tips:
+
+- In the game, the player needs to kill the enemy spacecrafts to collect energy. When the player has enough energy, the player can use the powerful laser rays, which are really overpower. I suggest using it only if you think you can't kill all enemies. 
+
+- In the second scene, there is a boss fight to win the boss; the player needs to collect most of the power-up components from scene 1 and scene 2. Without the power-up components, it is almost impossible to win the boss fight.
+
+
+
+## 👨🏻‍💻 Team Member
+
+- Sitt Yan Htun (6722114)
+
 ## 🎮 Features
 
 - 👽 Enemy wave generation
