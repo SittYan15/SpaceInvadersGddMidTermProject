@@ -907,6 +907,7 @@ public class Scene2 extends JPanel {
         playerHealth = player.getHealth();
         playerPower = player.getPower();
         kill += deaths;
+        distance += frame;
     }
 
     private void drawScene2Win(Graphics g) {
@@ -948,6 +949,7 @@ public class Scene2 extends JPanel {
             if (winFrame > 350) {
                 inGame = false;
                 timer.stop();
+                Game.saveScoreToCSV(distance, kill);
                 game.loadGameWin();
             }
 
@@ -994,7 +996,6 @@ public class Scene2 extends JPanel {
                     Scene2Win();
                 }
                 case "IntroEnd" -> {
-                    System.out.println("fk u");
                     isIntro = false;
                 }
                 case "WarningBossShown" -> {

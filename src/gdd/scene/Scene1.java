@@ -864,6 +864,7 @@ public class Scene1 extends JPanel {
         playerSpeed = player.getSpeed();
         playerHealth = player.getHealth();
         playerPower = player.getPower();
+        distance = frame;
         kill = deaths;
     }
 
@@ -944,7 +945,6 @@ public class Scene1 extends JPanel {
                     Scene1Win();
                 }
                 case "IntroEnd" -> {
-                    System.out.println("fk u");
                     isIntro = false;
                 }
                 default ->
