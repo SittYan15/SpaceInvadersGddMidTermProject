@@ -18,6 +18,9 @@ A classic Space Invaders arcade-style game built using Java. This project was cr
 - IDE: VS Code
 - Version Control: GitHub
 
+## Game Play Youtube Video Link
+- https://youtu.be/FTUfz8JOrmY
+
 ## Resources
 - Player Sprite Sheets (From the class provided resource)
 - Enemy Sprite Sheets (https://foozlecc.itch.io/)
